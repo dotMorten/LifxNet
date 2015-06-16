@@ -29,6 +29,8 @@
 		<StackPanel Grid.Column="1" Margin="20">
 			<TextBox Header="Name" Text="XXX" x:Name="Name" />
 			<ToggleSwitch Header="Power state" x:Name="PowerState" Toggled="PowerState_Toggled" />
+			<Slider x:Name="brightnessSlider" Header="Brightness" Minimum="0" Maximum="65535"
+					ValueChanged="brightnessSlider_ValueChanged" />
 		</StackPanel>
 		
     </Grid>
