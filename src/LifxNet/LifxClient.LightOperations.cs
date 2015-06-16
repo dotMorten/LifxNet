@@ -101,6 +101,7 @@ namespace LifxNet
 			);
 		}
 
+		/*
 		public async Task SetBrightnessAsync(LightBulb bulb,
 			UInt16 brightness,
 			TimeSpan transitionDuration)
@@ -121,7 +122,7 @@ namespace LifxNet
 			await BroadcastMessageAsync<AcknowledgementResponse>(bulb.HostName, header,
 				MessageType.SetLightBrightness, brightness, duration
 			);
-		}
+		}*/
 
 		public Task<LightStateResponse> GetLightStateAsync(LightBulb bulb)
 		{
