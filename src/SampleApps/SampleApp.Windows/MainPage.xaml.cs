@@ -75,9 +75,15 @@ namespace SampleApp
 				Name.Text = await client.GetDeviceLabelAsync(bulb);
 				PowerState.IsOn = await client.GetLightPowerAsync(bulb);
 				var state = await client.GetLightStateAsync(bulb);
+				hue = state.Hue;
+				saturation = state.Saturation;
+				translate.X = ColorGrid.ActualWidth / 65535 * hue;
+				translate.Y = ColorGrid.ActualHeight / 65535 * saturation;
 				brightnessSlider.Value = state.Brightness;
 			}
 		}
+		UInt16 hue;
+		UInt16 saturation;
 
 		private async void PowerState_Toggled(object sender, RoutedEventArgs e)
 		{
@@ -92,30 +98,37 @@ namespace SampleApp
 		{
 			var bulb = bulbList.SelectedItem as LifxNet.LightBulb;
 			if (bulb != null)
-				SetBrightness(bulb, e.NewValue);
+				SetColor(bulb, null, null, (UInt16)e.NewValue);
 		}
 
 		private Action pendingUpdateColorAction;
 		private Task pendingUpdateColor;
 
-		private async void SetBrightness(LifxNet.LightBulb bulb, double brightness)
+		private async void SetColor(LifxNet.LightBulb bulb, ushort? hue, ushort? saturation, ushort? brightness)
 		{
-			if (client == null) return;
+			if (client == null || bulb == null) return;
 			//Is a task already running? This avoids updating too often.
 			//Come back and execute last call when currently running operation is complete
 			if (pendingUpdateColor != null) 
 			{
-				pendingUpdateColorAction = () => SetBrightness(bulb, brightness);
+				pendingUpdateColorAction = () => SetColor(bulb, hue, saturation, brightness);
 				return;
 			}
 
-
-			var setColorTask = client.SetColorAsync(bulb, 0, 0, (UInt16)brightness, 2700, TimeSpan.Zero);
+			this.hue = hue.HasValue ? hue.Value : this.hue;
+			this.saturation = saturation.HasValue ? saturation.Value : this.saturation;
+			var b = brightness.HasValue ? brightness.Value : (UInt16)brightnessSlider.Value;
+			var setColorTask = client.SetColorAsync(bulb, this.hue, this.saturation, b, 2700, TimeSpan.Zero);
 			var throttleTask = Task.Delay(50); //Ensure task takes minimum 50 ms (no more than 20 messages per second)
 			pendingUpdateColor = Task.WhenAll(new Task[] { setColorTask, throttleTask });
  			try
 			{
-				await pendingUpdateColor;
+				Task timeoutTask = Task.Delay(2000);
+				await Task.WhenAny(new Task[] { timeoutTask, pendingUpdateColor });
+				if(!pendingUpdateColor.IsCompleted)
+				{
+					//timeout
+				}
 			}
 			catch { } //ignore errors (usually timeout)
 			pendingUpdateColor = null;
@@ -125,6 +138,21 @@ namespace SampleApp
 				pendingUpdateColorAction = null;
 				a();
 			}
+		}
+
+		private void ColorGrid_Tapped(object sender, TappedRoutedEventArgs e)
+		{
+			FrameworkElement elm = (FrameworkElement)sender;
+			var p = e.GetPosition(elm);
+			var Hue = p.X / elm.ActualWidth  * 65535;
+			var Sat = p.Y / elm.ActualHeight * 65535;
+			var bulb = bulbList.SelectedItem as LifxNet.LightBulb;
+			if (bulb != null)
+			{
+				SetColor(bulb, (ushort)Hue, (ushort)Sat, null);
+			}
+			translate.X = p.X;
+			translate.Y = p.Y;
 		}
 	}
 }
