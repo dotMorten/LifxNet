@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+    <metadata>
+        <id>LifxNet</id>
+        <version>1.0.0</version>
+        <title />
+        <authors>Morten Nielsen</authors>
+        <owners />
+        <licenseUrl>https://raw.githubusercontent.com/dotMorten/LifxNet/master/LICENSE</licenseUrl>
+        <projectUrl>https://github.com/dotMorten/LifxNet</projectUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Library for controlling LIFX light bulbs</description>
+        <releaseNotes></releaseNotes>
+        <copyright>© Morten Nielsen 2015</copyright>
+        <language>en-US</language>
+        <tags>lifx home automation uwp winphone winrt</tags>
+    </metadata>
+    <files>
+      
+      <file src="..\src\LifxNet\bin\Release\LifxNet.dll" target="lib\portable-win81+wpa81\LifxNet.dll" />
+      <file src="..\src\LifxNet\bin\Release\LifxNet.pdb" target="lib\portable-win81+wpa81\LifxNet.pdb" />
+      <file src="..\src\LifxNet\bin\Release\LifxNet.pri" target="lib\portable-win81+wpa81\LifxNet.pri" />
+      <file src="..\src\LifxNet\bin\Release\LifxNet.xml" target="lib\portable-win81+wpa81\LifxNet.xml" />
+        
+     
+      <!-- Source -->
+      <file src="..\src\LifxNet\**\*.cs" target="src" exclude="_ReSharper.*\**\*.*;packages\**\*.*;**\Debug\**\*.*;**\obj\**\*.*"/>       
+      
+    </files>
+</package>
