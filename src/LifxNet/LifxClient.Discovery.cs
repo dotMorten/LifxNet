@@ -17,15 +17,30 @@ namespace LifxNet
 		private CancellationTokenSource _DiscoverCancellationSource;
 		private Dictionary<string, Device> DiscoveredBulbs = new Dictionary<string, Device>();
 
+		/// <summary>
+		/// Event fired when a LIFX bulb is discovered on the network
+		/// </summary>
 		public event EventHandler<DeviceDiscoveryEventArgs> DeviceDiscovered;
-		public event EventHandler<DeviceDiscoveryEventArgs> DeviceLost; //TODO
+		/// <summary>
+		/// Event fired when a LIFX bulb hasn't been seen on the network for a while (for more than 5 minutes)
+		/// </summary>
+		public event EventHandler<DeviceDiscoveryEventArgs> DeviceLost;
 
 		private IList<Device> devices = new List<Device>();
 		
+		/// <summary>
+		/// Gets a list of currently known devices
+		/// </summary>
 		public IEnumerable<Device> Devices { get { return devices; } }
 
+		/// <summary>
+		/// Event args for <see cref="DeviceDiscovered"/> and <see cref="DeviceLost"/> events.
+		/// </summary>
 		public sealed class DeviceDiscoveryEventArgs : EventArgs
 		{
+			/// <summary>
+			/// The device the event relates to
+			/// </summary>
 			public Device Device { get; internal set; }
 		}
 
@@ -56,6 +71,12 @@ namespace LifxNet
 			}
 		}
 
+		/// <summary>
+		/// Begins searching for bulbs.
+		/// </summary>
+		/// <seealso cref="DeviceDiscovered"/>
+		/// <seealso cref="DeviceLost"/>
+		/// <seealso cref="StopDeviceDiscovery"/>
 		public void StartDeviceDiscovery()
 		{
 			if (_DiscoverCancellationSource != null && !_DiscoverCancellationSource.IsCancellationRequested)
@@ -94,6 +115,10 @@ namespace LifxNet
 			});
 		}
 
+		/// <summary>
+		/// Stops device discovery
+		/// </summary>
+		/// <seealso cref="StartDeviceDiscovery"/>
 		public void StopDeviceDiscovery()
 		{
 			if (_DiscoverCancellationSource == null || _DiscoverCancellationSource.IsCancellationRequested)
@@ -103,15 +128,29 @@ namespace LifxNet
 		}
 	}
 
-
+	/// <summary>
+	/// LIFX Generic Device
+	/// </summary>
 	public abstract class Device
 	{
 		internal Device() { }
+		/// <summary>
+		/// Hostname for the device
+		/// </summary>
 		public HostName HostName { get; internal set; }
+		/// <summary>
+		/// Service ID
+		/// </summary>
 		public byte Service { get; internal set; }
+		/// <summary>
+		/// Service port
+		/// </summary>
 		public UInt32 Port { get; internal set; }
 		internal DateTime LastSeen { get; set; }
 	}
+	/// <summary>
+	/// LIFX light bulb
+	/// </summary>
 	public sealed class LightBulb : Device
 	{
 		internal LightBulb()

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace LifxNet
 {
-	public abstract class LifxPacket
+	internal abstract class LifxPacket
 	{
 		private byte[] _payload;
 		private ushort _type;

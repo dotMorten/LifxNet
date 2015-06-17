@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace LifxNet
 {
+	/// <summary>
+	/// Base class for LIFX response types
+	/// </summary>
 	public abstract class LifxResponse
 	{
 		internal static LifxResponse Create(FrameHeader header, MessageType type, UInt32 source, byte[] payload)
@@ -50,11 +53,19 @@ namespace LifxNet
 		internal MessageType Type { get; private set; }
 		internal UInt32 Source { get; private set; }
 	}
-	public class AcknowledgementResponse: LifxResponse
+	/// <summary>
+	/// Response to any message sent with ack_required set to 1. 
+	/// </summary>
+	internal class AcknowledgementResponse: LifxResponse
 	{
 		internal AcknowledgementResponse(byte[] payload) : base() { }
 	}
-	public class StateServiceResponse : LifxResponse
+	/// <summary>
+	/// Response to GetService message.
+	/// Provides the device Service and port.
+	/// If the Service is temporarily unavailable, then the port value will be 0.
+	/// </summary>
+	internal class StateServiceResponse : LifxResponse
 	{
 		internal StateServiceResponse(byte[] payload) : base()
 		{
@@ -64,8 +75,10 @@ namespace LifxNet
 		public Byte Service { get; set; }
 		public UInt32 Port { get; private set; }
 	}
-	
-	public class StateLabelResponse : LifxResponse
+	/// <summary>
+	/// Response to GetLabel message. Provides device label.
+	/// </summary>
+	internal class StateLabelResponse : LifxResponse
 	{
 		internal StateLabelResponse(byte[] payload) : base() {
 
@@ -74,6 +87,9 @@ namespace LifxNet
 		}
 		public string Label { get; private set; }
 	}
+	/// <summary>
+	/// Sent by a device to provide the current light state
+	/// </summary>
 	public class LightStateResponse : LifxResponse
 	{
 		internal LightStateResponse(byte[] payload) : base()
@@ -85,11 +101,29 @@ namespace LifxNet
 			IsOn = BitConverter.ToUInt16(payload, 10) > 0;
 			Label = Encoding.UTF8.GetString(payload, 12, 32).Replace("\0","");
 		}
+		/// <summary>
+		/// Hue
+		/// </summary>
 		public UInt16 Hue { get; private set; }
+		/// <summary>
+		/// Saturation (0=desaturated, 65535 = fully saturated)
+		/// </summary>
 		public UInt16 Saturation { get; private set; }
+		/// <summary>
+		/// Brightness (0=off, 65535=full brightness)
+		/// </summary>
 		public UInt16 Brightness { get; private set; }
+		/// <summary>
+		/// Bulb color temperature
+		/// </summary>
 		public UInt16 Kelvin { get; private set; }
+		/// <summary>
+		/// Power state
+		/// </summary>
 		public bool IsOn { get; private set; }
+		/// <summary>
+		/// Light label
+		/// </summary>
 		public string Label { get; private set; }
 	}
 	internal class LightPowerResponse : LifxResponse
@@ -101,6 +135,9 @@ namespace LifxNet
 		public bool IsOn { get; private set; }
 	}
 
+	/// <summary>
+	/// Response to GetVersion message.	Provides the hardware version of the device.
+	/// </summary>
 	public class StateVersionResponse : LifxResponse
 	{
 		internal StateVersionResponse(byte[] payload) : base()
@@ -109,10 +146,22 @@ namespace LifxNet
 			Product = BitConverter.ToUInt32(payload, 4);
 			Version = BitConverter.ToUInt32(payload, 8);
 		}
+		/// <summary>
+		/// Vendor ID
+		/// </summary>
 		public UInt32 Vendor { get; private set; }
+		/// <summary>
+		/// Product ID
+		/// </summary>
 		public UInt32 Product { get; private set; }
+		/// <summary>
+		/// Hardware version
+		/// </summary>
 		public UInt32 Version { get; private set; }
 	}
+	/// <summary>
+	/// Response to GetHostFirmware message. Provides host firmware information.
+	/// </summary>
 	public class StateHostFirmwareResponse : LifxResponse
 	{
 		internal StateHostFirmwareResponse(byte[] payload) : base()
@@ -122,7 +171,13 @@ namespace LifxNet
 			//8..15 UInt64 is reserved
 			Version = BitConverter.ToUInt32(payload, 16);
 		}
+		/// <summary>
+		/// Firmware build time
+		/// </summary>
 		public DateTime Build { get; private set; }
+		/// <summary>
+		/// Firmware version
+		/// </summary>
 		public UInt32 Version { get; private set; }
 	}
 

@@ -24,6 +24,10 @@ namespace LifxNet
 		{
 		}
 
+		/// <summary>
+		/// Creates a new LIFX client.
+		/// </summary>
+		/// <returns>client</returns>
 		public static async Task<LifxClient> CreateAsync()
 		{
 			LifxClient client = new LifxClient();
@@ -94,6 +98,9 @@ namespace LifxNet
 
 		}
 
+		/// <summary>
+		/// Disposes the client
+		/// </summary>
 		public void Dispose()
 		{
 			_socket.Dispose();

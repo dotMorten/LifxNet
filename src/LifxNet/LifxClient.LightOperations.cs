@@ -13,11 +13,20 @@ namespace LifxNet
 	{
 		private Dictionary<UInt32, Action<LifxResponse>> taskCompletions = new Dictionary<uint, Action<LifxResponse>>();
 
+		/// <summary>
+		/// Turns a bulb on using the provided transition time
+		/// </summary>
+		/// <param name="bulb"></param>
+		/// <param name="transitionDuration"></param>
+		/// <returns></returns>
 		public Task TurnBulbOnAsync(LightBulb bulb, TimeSpan transitionDuration)
 		{
 			System.Diagnostics.Debug.WriteLine("Sending TurnBulbOn to {0}", bulb.HostName);
 			return SetLightPowerAsync(bulb, transitionDuration, true);
 		}
+		/// <summary>
+		/// Turns a bulb off using the provided transition time
+		/// </summary>
 		public Task TurnBulbOffAsync(LightBulb bulb, TimeSpan transitionDuration)
 		{
 			System.Diagnostics.Debug.WriteLine("Sending TurnBulbOff to {0}", bulb.HostName);
@@ -43,7 +52,11 @@ namespace LifxNet
 				(UInt16)(isOn ? 65535 : 0), b
 			).ConfigureAwait(false);
 		}
-
+		/// <summary>
+		/// Gets the current power state for a light bulb
+		/// </summary>
+		/// <param name="bulb"></param>
+		/// <returns></returns>
 		public async Task<bool> GetLightPowerAsync(LightBulb bulb)
 		{
 			FrameHeader header = new FrameHeader()
@@ -55,17 +68,41 @@ namespace LifxNet
 				bulb.HostName, header, MessageType.LightGetPower).ConfigureAwait(false)).IsOn;
 		}
 
-
+		/// <summary>
+		/// Sets color and temperature for a bulb
+		/// </summary>
+		/// <param name="bulb"></param>
+		/// <param name="color"></param>
+		/// <param name="kelvin"></param>
+		/// <returns></returns>
 		public Task SetColorAsync(LightBulb bulb, Windows.UI.Color color, UInt16 kelvin)
 		{
 			return SetColorAsync(bulb, color, kelvin, TimeSpan.Zero);
 		}
+		/// <summary>
+		/// Sets color and temperature for a bulb and uses a transition time to the provided state
+		/// </summary>
+		/// <param name="bulb"></param>
+		/// <param name="color"></param>
+		/// <param name="kelvin"></param>
+		/// <param name="transitionDuration"></param>
+		/// <returns></returns>
 		public Task SetColorAsync(LightBulb bulb, Windows.UI.Color color, UInt16 kelvin, TimeSpan transitionDuration)
 		{
 			var hsl = Utilities.RgbToHsl(color);
 			return SetColorAsync(bulb, hsl[0], hsl[1], hsl[2], kelvin, transitionDuration);
 		}
 
+		/// <summary>
+		/// Sets color and temperature for a bulb and uses a transition time to the provided state
+		/// </summary>
+		/// <param name="bulb">Light bulb</param>
+		/// <param name="hue">0..65535</param>
+		/// <param name="saturation">0..65535</param>
+		/// <param name="brightness">0..65535</param>
+		/// <param name="kelvin">2700..9000</param>
+		/// <param name="transitionDuration"></param>
+		/// <returns></returns>
 		public async Task SetColorAsync(LightBulb bulb,
 			UInt16 hue,
 			UInt16 saturation,
@@ -124,6 +161,11 @@ namespace LifxNet
 			);
 		}*/
 
+			/// <summary>
+			/// Gets the current state of the bulb
+			/// </summary>
+			/// <param name="bulb"></param>
+			/// <returns></returns>
 		public Task<LightStateResponse> GetLightStateAsync(LightBulb bulb)
 		{
 			FrameHeader header = new FrameHeader()
