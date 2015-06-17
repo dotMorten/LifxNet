@@ -20,6 +20,7 @@ Based on the official [LIFX protocol docs](https://github.com/LIFX/lifx-protocol
 	{
 		var bulb = e.Device as LifxNet.LightBulb;
 		await client.SetDevicePowerStateAsync(bulb, true); //Turn bulb on
+		await client.SetColorAsync(bulb, Colors.Red, 2700); //Set color to Red			
   }
 
 ```

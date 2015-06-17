@@ -72,9 +72,9 @@ namespace SampleApp
 			var bulb = bulbList.SelectedItem as LifxNet.LightBulb;
 			if (bulb != null)
 			{
-				Name.Text = await client.GetDeviceLabelAsync(bulb);
-				PowerState.IsOn = await client.GetLightPowerAsync(bulb);
 				var state = await client.GetLightStateAsync(bulb);
+				Name.Text = state.Label;
+				PowerState.IsOn = state.IsOn;
 				hue = state.Hue;
 				saturation = state.Saturation;
 				translate.X = ColorGrid.ActualWidth / 65535 * hue;
