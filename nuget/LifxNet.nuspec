@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>LifxNet</id>
-        <version>1.0.0</version>
+        <version>2.0.0</version>
         <title />
         <authors>Morten Nielsen</authors>
         <owners />
@@ -14,17 +14,20 @@
         <copyright>© Morten Nielsen 2015</copyright>
         <language>en-US</language>
         <tags>lifx home automation uwp winphone winrt</tags>
+        <references>
+          <reference file="LifxNet.dll" />
+        </references>
+        <dependencies>
+          <group targetFramework=".NETStandard1.3">
+            <dependency id="NETStandard.Library" version="1.6.1" />
+          </group>
+        </dependencies>
     </metadata>
-    <files>
-      
-      <file src="..\src\LifxNet\bin\Release\LifxNet.dll" target="lib\portable-win81+wpa81\LifxNet.dll" />
-      <file src="..\src\LifxNet\bin\Release\LifxNet.pdb" target="lib\portable-win81+wpa81\LifxNet.pdb" />
-      <file src="..\src\LifxNet\bin\Release\LifxNet.pri" target="lib\portable-win81+wpa81\LifxNet.pri" />
-      <file src="..\src\LifxNet\bin\Release\LifxNet.xml" target="lib\portable-win81+wpa81\LifxNet.xml" />
-        
-     
+    <files>      
+      <file src="..\src\LifxNet\bin\Release\LifxNet.dll" target="lib\netstandard1.3\LifxNet.dll" />
+      <file src="..\src\LifxNet\bin\Release\LifxNet.pdb" target="lib\netstandard1.3\LifxNet.pdb" />
+      <file src="..\src\LifxNet\bin\Release\LifxNet.xml" target="lib\netstandard1.3\LifxNet.xml" />     
       <!-- Source -->
-      <file src="..\src\LifxNet\**\*.cs" target="src" exclude="_ReSharper.*\**\*.*;packages\**\*.*;**\Debug\**\*.*;**\obj\**\*.*"/>       
-      
+      <file src="..\src\LifxNet\**\*.cs" target="src" exclude="_ReSharper.*\**\*.*;packages\**\*.*;**\Debug\**\*.*;**\obj\**\*.*"/>             
     </files>
 </package>
