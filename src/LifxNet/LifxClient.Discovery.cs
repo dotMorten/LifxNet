@@ -44,10 +44,13 @@ namespace LifxNet
 
 		private void ProcessDeviceDiscoveryMessage(System.Net.IPAddress remoteAddress, int remotePort, LifxResponse msg)
 		{
-			if (DiscoveredBulbs.ContainsKey(remoteAddress.ToString()))  //already discovered
+            string id = msg.Header.TargetMacAddressName; //remoteAddress.ToString()
+            if (DiscoveredBulbs.ContainsKey(id))  //already discovered
             {
-				DiscoveredBulbs[remoteAddress.ToString()].LastSeen = DateTime.UtcNow; //Update datestamp
-				return;
+				DiscoveredBulbs[id].LastSeen = DateTime.UtcNow; //Update datestamp
+                DiscoveredBulbs[id].HostName = remoteAddress.ToString(); //Update hostname in case IP changed
+
+                return;
 			}
 			if (msg.Source != discoverSourceID || //did we request the discovery?
 				_DiscoverCancellationSource == null ||
@@ -59,9 +62,10 @@ namespace LifxNet
 				HostName = remoteAddress.ToString(),
 				Service = msg.Payload[0],
 				Port = BitConverter.ToUInt32(msg.Payload, 1),
-				LastSeen = DateTime.UtcNow
+				LastSeen = DateTime.UtcNow,
+                MacAddress = msg.Header.TargetMacAddress
 			};
-			DiscoveredBulbs[remoteAddress.ToString()] = device;
+			DiscoveredBulbs[id] = device;
 			devices.Add(device);
 			if (DeviceDiscovered != null)
 			{
@@ -104,7 +108,7 @@ namespace LifxNet
 						foreach(var device in lostDevices)
 						{
 							devices.Remove(device);
-							DiscoveredBulbs.Remove(device.HostName.ToString());
+							DiscoveredBulbs.Remove(device.MacAddressName);
 							if (DeviceLost != null)
 								DeviceLost(this, new DeviceDiscoveryEventArgs() { Device = device });
 						}
@@ -145,14 +149,29 @@ namespace LifxNet
 		/// </summary>
 		public UInt32 Port { get; internal set; }
 		internal DateTime LastSeen { get; set; }
-	}
-	/// <summary>
-	/// LIFX light bulb
-	/// </summary>
-	public sealed class LightBulb : Device
+        /// <summary>
+        /// Gets the MAC address
+        /// </summary>
+        public byte[] MacAddress { get; internal set; }
+        /// <summary>
+        /// Gets the MAC address
+        /// </summary>
+        public string MacAddressName
+        {
+            get
+            {
+                if (MacAddress == null) return null;
+                return string.Join(":", MacAddress.Take(6).Select(tb => tb.ToString("X2")).ToArray());
+            }
+        }
+    }
+    /// <summary>
+    /// LIFX light bulb
+    /// </summary>
+    public sealed class LightBulb : Device
 	{
 		internal LightBulb()
 		{
 		}
-	}
+    }
 }

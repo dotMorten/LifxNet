@@ -198,6 +198,7 @@ namespace LifxNet
 				var source = br.ReadUInt32();
 				//frame address
 				byte[] target = br.ReadBytes(8);
+                header.TargetMacAddress = target;
 				ms.Seek(6, SeekOrigin.Current); //skip reserved
 				var b = br.ReadByte(); //reserved:6, ack_required:1, res_required:1, 
 				header.Sequence = br.ReadByte();
@@ -294,6 +295,14 @@ namespace LifxNet
 			TargetMacAddress = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
 			AtTime = DateTime.MinValue;
 		}
-	}
+        public string TargetMacAddressName
+        {
+            get
+            {
+                if (TargetMacAddress == null) return null;
+                return string.Join(":", TargetMacAddress.Take(6).Select(tb => tb.ToString("X2")).ToArray());
+            }
+        }
+    }
 
 }

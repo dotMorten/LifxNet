@@ -28,7 +28,7 @@ namespace SampleApp.NET462
 
         private static async void Client_DeviceDiscovered(object sender, LifxClient.DeviceDiscoveryEventArgs e)
         {
-            Console.WriteLine("Device found @ " + e.Device.HostName);
+            Console.WriteLine($"Device {e.Device.MacAddressName} found @ {e.Device.HostName}");
             var version = await client.GetDeviceVersionAsync(e.Device);
             //var label = await client.GetDeviceLabelAsync(e.Device);
             var state = await client.GetLightStateAsync(e.Device as LightBulb);
