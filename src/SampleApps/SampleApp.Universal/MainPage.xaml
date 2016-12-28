@@ -19,13 +19,13 @@
 			<ListView x:Name="bulbList" SelectionChanged="bulbList_SelectionChanged" >
 				<ListView.ItemTemplate>
 					<DataTemplate>
-						<TextBlock Text="{Binding HostName.RawName}" FontSize="18" />
+						<TextBlock Text="{Binding HostName}" FontSize="18" />
 					</DataTemplate>
 				</ListView.ItemTemplate>
 			</ListView>
 		</StackPanel>
 
-		<StackPanel Grid.Column="1" Margin="20">
+		<StackPanel Grid.Column="1" Margin="20" x:Name="statePanel" Visibility="Collapsed">
 			<TextBox Header="Name" Text="XXX" x:Name="Name" />
 			<ToggleSwitch Header="Power state" x:Name="PowerState" Toggled="PowerState_Toggled" />
 			<Slider x:Name="brightnessSlider" Header="Brightness" Minimum="0" Maximum="65535"
@@ -63,5 +63,5 @@
 			</Grid>
 		</StackPanel>
 
-	</Grid>
+    </Grid>
 </Page>

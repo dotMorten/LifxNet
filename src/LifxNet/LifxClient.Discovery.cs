@@ -5,8 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Windows.Networking;
-using Windows.Networking.Sockets;
 
 namespace LifxNet
 {
@@ -44,7 +42,7 @@ namespace LifxNet
 			public Device Device { get; internal set; }
 		}
 
-		private void ProcessDeviceDiscoveryMessage(HostName remoteAddress, string remotePort, LifxResponse msg)
+		private void ProcessDeviceDiscoveryMessage(System.Net.IPAddress remoteAddress, int remotePort, LifxResponse msg)
 		{
 			if (DiscoveredBulbs.ContainsKey(remoteAddress.ToString()))  //already discovered
             {
@@ -58,7 +56,7 @@ namespace LifxNet
 
 			var device = new LightBulb()
 			{
-				HostName = remoteAddress,
+				HostName = remoteAddress.ToString(),
 				Service = msg.Payload[0],
 				Port = BitConverter.ToUInt32(msg.Payload, 1),
 				LastSeen = DateTime.UtcNow
@@ -137,7 +135,7 @@ namespace LifxNet
 		/// <summary>
 		/// Hostname for the device
 		/// </summary>
-		public HostName HostName { get; internal set; }
+		public string HostName { get; internal set; }
 		/// <summary>
 		/// Service ID
 		/// </summary>

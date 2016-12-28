@@ -9,24 +9,8 @@ namespace LifxNet
 	internal static class Utilities
 	{
 		public static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-
-		public static void RunOnDispatcher(Action action)
-		{
-			var dispatcher = Windows.UI.Xaml.Window.Current.CoreWindow.Dispatcher;
-			if (dispatcher == null)
-				return;
-			if (dispatcher == null || dispatcher.HasThreadAccess)
-			{
-				action();
-			}
-			else
-			{
-				var _ = dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
-					() => { action(); });
-			}
-		}
-
-		public static UInt16[] RgbToHsl(Windows.UI.Color rgb)
+        
+		public static UInt16[] RgbToHsl(Color rgb)
 		{
 			// normalize red, green and blue values
 			double r = (rgb.R / 255.0);

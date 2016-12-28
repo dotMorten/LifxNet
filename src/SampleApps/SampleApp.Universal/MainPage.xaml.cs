@@ -27,9 +27,9 @@ namespace SampleApp.Universal
 
 		ObservableCollection<LifxNet.LightBulb> bulbs = new ObservableCollection<LifxNet.LightBulb>();
 		LifxNet.LifxClient client = null;
-		public MainPage()
-		{
-			this.InitializeComponent();
+        public MainPage()
+        {
+            this.InitializeComponent();
 			bulbList.ItemsSource = bulbs;
 		}
 		protected async override void OnNavigatedTo(NavigationEventArgs e)
@@ -68,22 +68,25 @@ namespace SampleApp.Universal
 			});
 		}
 
-		private async void bulbList_SelectionChanged(object sender, Windows.UI.Xaml.Controls.SelectionChangedEventArgs e)
-		{
-			var bulb = bulbList.SelectedItem as LifxNet.LightBulb;
-			if (bulb != null)
-			{
-				var state = await client.GetLightStateAsync(bulb);
-				Name.Text = state.Label;
-				PowerState.IsOn = state.IsOn;
-				hue = state.Hue;
-				saturation = state.Saturation;
-				translate.X = ColorGrid.ActualWidth / 65535 * hue;
-				translate.Y = ColorGrid.ActualHeight / 65535 * saturation;
-				brightnessSlider.Value = state.Brightness;
-			}
-		}
-		UInt16 hue;
+        private async void bulbList_SelectionChanged(object sender, Windows.UI.Xaml.Controls.SelectionChangedEventArgs e)
+        {
+            var bulb = bulbList.SelectedItem as LifxNet.LightBulb;
+            if (bulb != null)
+            {
+                var state = await client.GetLightStateAsync(bulb);
+                Name.Text = state.Label;
+                PowerState.IsOn = state.IsOn;
+                hue = state.Hue;
+                saturation = state.Saturation;
+                translate.X = ColorGrid.ActualWidth / 65535 * hue;
+                translate.Y = ColorGrid.ActualHeight / 65535 * saturation;
+                brightnessSlider.Value = state.Brightness;
+                statePanel.Visibility = Visibility.Visible;
+            }
+            else
+                statePanel.Visibility = Visibility.Collapsed;
+        }
+        UInt16 hue;
 		UInt16 saturation;
 
 		private async void PowerState_Toggled(object sender, RoutedEventArgs e)
@@ -154,6 +157,6 @@ namespace SampleApp.Universal
 			}
 			translate.X = p.X;
 			translate.Y = p.Y;
-		}
-	}
+        }
+    }
 }

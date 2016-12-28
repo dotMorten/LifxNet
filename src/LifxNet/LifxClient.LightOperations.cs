@@ -4,8 +4,6 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Windows.Networking;
-using Windows.Networking.Sockets;
 
 namespace LifxNet
 {
@@ -75,7 +73,7 @@ namespace LifxNet
 		/// <param name="color"></param>
 		/// <param name="kelvin"></param>
 		/// <returns></returns>
-		public Task SetColorAsync(LightBulb bulb, Windows.UI.Color color, UInt16 kelvin)
+		public Task SetColorAsync(LightBulb bulb, Color color, UInt16 kelvin)
 		{
 			return SetColorAsync(bulb, color, kelvin, TimeSpan.Zero);
 		}
@@ -87,7 +85,7 @@ namespace LifxNet
 		/// <param name="kelvin"></param>
 		/// <param name="transitionDuration"></param>
 		/// <returns></returns>
-		public Task SetColorAsync(LightBulb bulb, Windows.UI.Color color, UInt16 kelvin, TimeSpan transitionDuration)
+		public Task SetColorAsync(LightBulb bulb, Color color, UInt16 kelvin, TimeSpan transitionDuration)
 		{
 			var hsl = Utilities.RgbToHsl(color);
 			return SetColorAsync(bulb, hsl[0], hsl[1], hsl[2], kelvin, transitionDuration);
