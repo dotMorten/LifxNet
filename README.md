@@ -23,12 +23,12 @@ Based on the official [LIFX protocol docs](https://github.com/LIFX/lifx-protocol
 
 ...
 
-	private void Client_DeviceDiscovered(object sender, LifxNet.LifxClient.DeviceDiscoveryEventArgs e)
+	private async void Client_DeviceDiscovered(object sender, LifxNet.LifxClient.DeviceDiscoveryEventArgs e)
 	{
 		var bulb = e.Device as LifxNet.LightBulb;
 		await client.SetDevicePowerStateAsync(bulb, true); //Turn bulb on
 		await client.SetColorAsync(bulb, Colors.Red, 2700); //Set color to Red and 2700K Temperature			
-  }
+	}
 
 ```
 See the sample apps for more examples.
