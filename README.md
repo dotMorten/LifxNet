@@ -1,6 +1,13 @@
+
 # LifxNet
 
-A .NET library for LIFX
+A .NET Standard 1.3 library for LIFX.
+Supports .NET, UWP, Xamarin iOS, Xamarin Android, and any other .NET Platform that has implemented .NET Standard 1.3+.
+
+Get the [Nuget package here](http://www.nuget.org/packages/LifxNet/):
+```
+PM> Install-Package LifxNet 
+```
 
 Tested with LIFX 2.0 Firmware.
 
