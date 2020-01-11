@@ -136,6 +136,19 @@ namespace LifxNet
 	public abstract class Device
 	{
 		internal Device() { }
+		internal Device(string hostname, byte[] macAddress, byte service, UInt32 port)
+		{
+			if (hostname == null)
+				throw new ArgumentNullException(nameof(hostname));
+			if(string.IsNullOrWhiteSpace(hostname))
+				throw new ArgumentException(nameof(hostname));
+			HostName = hostname;
+			MacAddress = macAddress;
+			Service = service;
+			Port = port;
+			LastSeen = DateTime.MinValue;
+		}
+
 		/// <summary>
 		/// Hostname for the device
 		/// </summary>
@@ -171,6 +184,17 @@ namespace LifxNet
     public sealed class LightBulb : Device
 	{
 		internal LightBulb()
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of a bulb instead of relying on discovery. At least the host name must be provide for the device to be usable.
+		/// </summary>
+		/// <param name="hostname">Required</param>
+		/// <param name="macAddress"></param>
+		/// <param name="service"></param>
+		/// <param name="port"></param>
+		public LightBulb(string hostname, byte[] macAddress = null, byte service = 0, UInt32 port = 0) : base(hostname, macAddress, service, port)
 		{
 		}
     }
