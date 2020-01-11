@@ -13,7 +13,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleApp.NET462", "SampleApps\SampleApp.NET462\SampleApp.NET462.csproj", "{9165A342-4844-4655-8D1E-D607CD3AA2BD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleApp.netcore", "SampleApps\SampleApp.netcore\SampleApp.netcore.csproj", "{9165A342-4844-4655-8D1E-D607CD3AA2BD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleApp.Universal", "SampleApps\SampleApp.Universal\SampleApp.Universal.csproj", "{9072BB5D-AF63-4E60-98A6-86AE8CF898B1}"
 EndProject
