@@ -11,6 +11,15 @@
     <Description>Library for controlling LIFX light bulbs</Description>
     <Copyright>© Morten Nielsen 2015-2020</Copyright>
     <PackageTags>iot, lifx home automation uwp winphone winrt</PackageTags>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/dotMorten/LifxNet</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/dotMorten/LifxNet</RepositoryUrl>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+  </ItemGroup>
 
 </Project>
