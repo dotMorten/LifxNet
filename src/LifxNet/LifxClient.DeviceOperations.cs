@@ -57,7 +57,7 @@ namespace LifxNet
 				Identifier = GetNextIdentifier(),
 				AcknowledgeRequired = false
 			};
-			var resp = await BroadcastMessageAsync<StateLabelResponse>(device.HostName, header, MessageType.DeviceGetLabel.ConfigureAwait(false));
+			var resp = await BroadcastMessageAsync<StateLabelResponse>(device.HostName, header, MessageType.DeviceGetLabel).ConfigureAwait(false);
 			return resp.Label;
 		}
 
