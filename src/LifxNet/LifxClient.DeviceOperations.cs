@@ -38,8 +38,8 @@ namespace LifxNet
 				AcknowledgeRequired = true
 			};
 
-			await BroadcastMessageAsync<AcknowledgementResponse>(device.HostName, header,
-				MessageType.DeviceSetPower, (UInt16)(isOn ? 65535 : 0));
+			_ = await BroadcastMessageAsync<AcknowledgementResponse>(device.HostName, header,
+				MessageType.DeviceSetPower, (UInt16)(isOn ? 65535 : 0)).ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -57,7 +57,7 @@ namespace LifxNet
 				Identifier = GetNextIdentifier(),
 				AcknowledgeRequired = false
 			};
-			var resp = await BroadcastMessageAsync<StateLabelResponse>(device.HostName, header, MessageType.DeviceGetLabel);
+			var resp = await BroadcastMessageAsync<StateLabelResponse>(device.HostName, header, MessageType.DeviceGetLabel.ConfigureAwait(false));
 			return resp.Label;
 		}
 
@@ -77,14 +77,14 @@ namespace LifxNet
 				Identifier = GetNextIdentifier(),
 				AcknowledgeRequired = true
 			};
-			var resp = await BroadcastMessageAsync<AcknowledgementResponse>(
-				device.HostName, header, MessageType.DeviceSetLabel, label);
+			_ = await BroadcastMessageAsync<AcknowledgementResponse>(
+				device.HostName, header, MessageType.DeviceSetLabel, label).ConfigureAwait(false);
 		}
 
 		/// <summary>
 		/// Gets the device version
 		/// </summary>
-		public async Task<StateVersionResponse> GetDeviceVersionAsync(Device device)
+		public Task<StateVersionResponse> GetDeviceVersionAsync(Device device)
 		{
 			if (device == null)
 				throw new ArgumentNullException(nameof(device));
@@ -94,15 +94,14 @@ namespace LifxNet
 				Identifier = GetNextIdentifier(),
 				AcknowledgeRequired = false
 			};
-			var resp = await BroadcastMessageAsync<StateVersionResponse>(device.HostName, header, MessageType.DeviceGetVersion);
-			return resp;
+			return BroadcastMessageAsync<StateVersionResponse>(device.HostName, header, MessageType.DeviceGetVersion);
 		}
 		/// <summary>
 		/// Gets the device's host firmware
 		/// </summary>
 		/// <param name="device"></param>
 		/// <returns></returns>
-		public async Task<StateHostFirmwareResponse> GetDeviceHostFirmwareAsync(Device device)
+		public Task<StateHostFirmwareResponse> GetDeviceHostFirmwareAsync(Device device)
 		{
 			if (device == null)
 				throw new ArgumentNullException(nameof(device));
@@ -112,8 +111,7 @@ namespace LifxNet
 				Identifier = GetNextIdentifier(),
 				AcknowledgeRequired = false
 			};
-			var resp = await BroadcastMessageAsync<StateHostFirmwareResponse>(device.HostName, header, MessageType.DeviceGetHostFirmware);
-			return resp;
+			return BroadcastMessageAsync<StateHostFirmwareResponse>(device.HostName, header, MessageType.DeviceGetHostFirmware);
 		}
 	}
 }
