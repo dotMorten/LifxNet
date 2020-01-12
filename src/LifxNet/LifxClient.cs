@@ -16,7 +16,7 @@ namespace LifxNet
 	{
 		
 		private const int Port = 56700;
-		private UdpClient _socket;
+		private UdpClient? _socket;
         private bool _isRunning;
 
 		private LifxClient()
@@ -49,7 +49,7 @@ namespace LifxNet
         {
             Task.Run(async () =>
             {
-                while (_isRunning)
+                while (_isRunning && _socket != null)
                     try
                     {
                         var result = await _socket.ReceiveAsync();
@@ -93,10 +93,10 @@ namespace LifxNet
 		public void Dispose()
 		{
             _isRunning = false;
-			_socket.Dispose();
+			_socket?.Dispose();
 		}
 
-		private Task<T> BroadcastMessageAsync<T>(string hostName, FrameHeader header, MessageType type, params object[] args)
+		private Task<T> BroadcastMessageAsync<T>(string? hostName, FrameHeader header, MessageType type, params object[] args)
 						where T : LifxResponse
 
 		{
@@ -121,21 +121,23 @@ namespace LifxNet
 			}
 			return BroadcastMessagePayloadAsync<T>(hostName, header, type, payload.ToArray());
 		}
-		private async Task<T> BroadcastMessagePayloadAsync<T>(string hostName, FrameHeader header, MessageType type, byte[] payload)
+		private async Task<T> BroadcastMessagePayloadAsync<T>(string? hostName, FrameHeader header, MessageType type, byte[] payload)
 			where T : LifxResponse
 		{
+			if (_socket == null)
+				throw new InvalidOperationException("No valid socket");
 #if DEBUG
-			/// MemoryStream ms = new MemoryStream();
-			/// await WritePacketToStreamAsync(ms.AsOutputStream(), header, (UInt16)type, payload).ConfigureAwait(false);
-			/// var data = ms.ToArray();
-			/// System.Diagnostics.Debug.WriteLine(
-			/// 	string.Join(",", (from a in data select a.ToString("X2")).ToArray()));
+			// MemoryStream ms = new MemoryStream();
+			// await WritePacketToStreamAsync(ms.AsOutputStream(), header, (UInt16)type, payload).ConfigureAwait(false);
+			// var data = ms.ToArray();
+			// System.Diagnostics.Debug.WriteLine(
+			// 	string.Join(",", (from a in data select a.ToString("X2")).ToArray()));
 #endif
 			if (hostName == null)
 			{
 				hostName = "255.255.255.255";
 			}
-			TaskCompletionSource<T> tcs = null;
+			TaskCompletionSource<T>? tcs = null;
             if (//header.AcknowledgeRequired && 
 				header.Identifier > 0 && 
 				typeof(T) != typeof(UnknownResponse))
@@ -143,22 +145,15 @@ namespace LifxNet
 				tcs = new TaskCompletionSource<T>();
 				Action<LifxResponse> action = (r) =>
 				{
-					if(!tcs.Task.IsCompleted)
-					{
-						if (r.GetType() == typeof(T))
-							tcs.SetResult((T)r);
-						else
-						{
-
-						}
-					}
+					if (r.GetType() == typeof(T))
+						tcs.TrySetResult((T)r);
 				};
 				taskCompletions[header.Identifier] = action;
 			}
 
             using (MemoryStream stream = new MemoryStream())
             {
-                await WritePacketToStreamAsync(stream, header, (UInt16)type, payload).ConfigureAwait(false);
+                WritePacketToStream(stream, header, (UInt16)type, payload);
                 var msg = stream.ToArray();
                 await _socket.SendAsync(msg, msg.Length, hostName, Port);
             }
@@ -207,14 +202,11 @@ namespace LifxNet
                 header.AtTime = Utilities.Epoch.AddMilliseconds(nanoseconds * 0.000001);
 				var type = (MessageType)br.ReadUInt16();
 				ms.Seek(2, SeekOrigin.Current); //skip reserved
-				byte[] payload = null;
-				if (size > 36)
-				 payload = br.ReadBytes(size - 36);
-				return LifxResponse.Create(header, type, source, payload);
+				return LifxResponse.Create(header, type, source, size > 36 ? br.ReadBytes(size - 36) : new byte[] { });
 			}
 		}
 
-		private async Task WritePacketToStreamAsync(Stream outStream, FrameHeader header, UInt16 type, byte[] payload)
+		private void WritePacketToStream(Stream outStream, FrameHeader header, UInt16 type, byte[] payload)
 		{
 			using (var dw = new BinaryWriter(outStream) { /*ByteOrder = ByteOrder.LittleEndian*/ })
 			{
@@ -299,7 +291,7 @@ namespace LifxNet
         {
             get
             {
-                if (TargetMacAddress == null) return null;
+                if (TargetMacAddress == null) return string.Empty;
                 return string.Join(":", TargetMacAddress.Take(6).Select(tb => tb.ToString("X2")).ToArray());
             }
         }

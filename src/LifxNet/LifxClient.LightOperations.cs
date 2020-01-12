@@ -17,20 +17,39 @@ namespace LifxNet
 		/// <param name="bulb"></param>
 		/// <param name="transitionDuration"></param>
 		/// <returns></returns>
-		public Task TurnBulbOnAsync(LightBulb bulb, TimeSpan transitionDuration)
-		{
-			System.Diagnostics.Debug.WriteLine("Sending TurnBulbOn to {0}", bulb.HostName);
-			return SetLightPowerAsync(bulb, transitionDuration, true);
-		}
+		/// <seealso cref="TurnBulbOffAsync(LightBulb, TimeSpan)"/>
+		/// <seealso cref="TurnDeviceOnAsync(Device)"/>
+		/// <seealso cref="TurnDeviceOffAsync(Device)"/>
+		/// <seealso cref="SetLightPowerAsync(LightBulb, TimeSpan, bool)"/>
+		/// <seealso cref="SetDevicePowerStateAsync(Device, bool)"/>
+		/// <seealso cref="GetLightPowerAsync(LightBulb)"/>
+		public Task TurnBulbOnAsync(LightBulb bulb, TimeSpan transitionDuration) => SetLightPowerAsync(bulb, transitionDuration, true);
+
 		/// <summary>
 		/// Turns a bulb off using the provided transition time
 		/// </summary>
-		public Task TurnBulbOffAsync(LightBulb bulb, TimeSpan transitionDuration)
-		{
-			System.Diagnostics.Debug.WriteLine("Sending TurnBulbOff to {0}", bulb.HostName);
-			return SetLightPowerAsync(bulb, transitionDuration, false);
-		}
-		private async Task SetLightPowerAsync(LightBulb bulb, TimeSpan transitionDuration, bool isOn)
+		/// <seealso cref="TurnBulbOnAsync(LightBulb, TimeSpan)"/>
+		/// <seealso cref="TurnDeviceOnAsync(Device)"/>
+		/// <seealso cref="TurnDeviceOffAsync(Device)"/>
+		/// <seealso cref="SetLightPowerAsync(LightBulb, TimeSpan, bool)"/>
+		/// <seealso cref="SetDevicePowerStateAsync(Device, bool)"/>
+		/// <seealso cref="GetLightPowerAsync(LightBulb)"/>
+		public Task TurnBulbOffAsync(LightBulb bulb, TimeSpan transitionDuration) => SetLightPowerAsync(bulb, transitionDuration, false);
+
+		/// <summary>
+		/// Turns a bulb on or off using the provided transition time
+		/// </summary>
+		/// <param name="bulb"></param>
+		/// <param name="transitionDuration"></param>
+		/// <param name="isOn">True to turn on, false to turn off</param>
+		/// <returns></returns>
+		/// <seealso cref="TurnBulbOffAsync(LightBulb, TimeSpan)"/>
+		/// <seealso cref="TurnBulbOnAsync(LightBulb, TimeSpan)"/>
+		/// <seealso cref="TurnDeviceOnAsync(Device)"/>
+		/// <seealso cref="TurnDeviceOffAsync(Device)"/>
+		/// <seealso cref="SetDevicePowerStateAsync(Device, bool)"/>
+		/// <seealso cref="GetLightPowerAsync(LightBulb)"/>
+		public async Task SetLightPowerAsync(LightBulb bulb, TimeSpan transitionDuration, bool isOn)
 		{
 			if (bulb == null)
 				throw new ArgumentNullException("bulb");
@@ -40,16 +59,19 @@ namespace LifxNet
 
 			FrameHeader header = new FrameHeader()
 			{
-				Identifier = (uint)randomizer.Next(),
+				Identifier = GetNextIdentifier(),
 				AcknowledgeRequired = true
 			};
 
 			var b = BitConverter.GetBytes((UInt16)transitionDuration.TotalMilliseconds);
 
+			System.Diagnostics.Debug.WriteLine($"Sending LightSetPower(on={isOn},duration={transitionDuration.TotalMilliseconds}ms) to {bulb.HostName}");
+
 			await BroadcastMessageAsync<AcknowledgementResponse>(bulb.HostName, header, MessageType.LightSetPower,
 				(UInt16)(isOn ? 65535 : 0), b
 			).ConfigureAwait(false);
 		}
+
 		/// <summary>
 		/// Gets the current power state for a light bulb
 		/// </summary>
@@ -57,9 +79,12 @@ namespace LifxNet
 		/// <returns></returns>
 		public async Task<bool> GetLightPowerAsync(LightBulb bulb)
 		{
+			if (bulb == null)
+				throw new ArgumentNullException(nameof(bulb));
+
 			FrameHeader header = new FrameHeader()
 			{
-				Identifier = (uint)randomizer.Next(),
+				Identifier = GetNextIdentifier(),
 				AcknowledgeRequired = true
 			};
 			return (await BroadcastMessageAsync<LightPowerResponse>(
@@ -73,10 +98,8 @@ namespace LifxNet
 		/// <param name="color"></param>
 		/// <param name="kelvin"></param>
 		/// <returns></returns>
-		public Task SetColorAsync(LightBulb bulb, Color color, UInt16 kelvin)
-		{
-			return SetColorAsync(bulb, color, kelvin, TimeSpan.Zero);
-		}
+		public Task SetColorAsync(LightBulb bulb, Color color, UInt16 kelvin) => SetColorAsync(bulb, color, kelvin, TimeSpan.Zero);
+
 		/// <summary>
 		/// Sets color and temperature for a bulb and uses a transition time to the provided state
 		/// </summary>
@@ -87,6 +110,8 @@ namespace LifxNet
 		/// <returns></returns>
 		public Task SetColorAsync(LightBulb bulb, Color color, UInt16 kelvin, TimeSpan transitionDuration)
 		{
+			if (bulb == null)
+				throw new ArgumentNullException(nameof(bulb));
 			var hsl = Utilities.RgbToHsl(color);
 			return SetColorAsync(bulb, hsl[0], hsl[1], hsl[2], kelvin, transitionDuration);
 		}
@@ -108,6 +133,8 @@ namespace LifxNet
 			UInt16 kelvin,
 			TimeSpan transitionDuration)
 		{
+			if (bulb == null)
+				throw new ArgumentNullException(nameof(bulb));
 			if (transitionDuration.TotalMilliseconds > UInt32.MaxValue ||
 				transitionDuration.Ticks < 0)
 				throw new ArgumentOutOfRangeException("transitionDuration");
@@ -119,7 +146,7 @@ namespace LifxNet
 				System.Diagnostics.Debug.WriteLine("Setting color to {0}", bulb.HostName);
 			FrameHeader header = new FrameHeader()
 			{
-				Identifier = (uint)randomizer.Next(),
+				Identifier = GetNextIdentifier(),
 				AcknowledgeRequired = true
 			};
 			UInt32 duration = (UInt32)transitionDuration.TotalMilliseconds;
@@ -166,9 +193,11 @@ namespace LifxNet
 			/// <returns></returns>
 		public Task<LightStateResponse> GetLightStateAsync(LightBulb bulb)
 		{
+			if (bulb == null)
+				throw new ArgumentNullException(nameof(bulb));
 			FrameHeader header = new FrameHeader()
 			{
-				Identifier = (uint)randomizer.Next(),
+				Identifier = GetNextIdentifier(),
 				AcknowledgeRequired = false
 			};
 			return BroadcastMessageAsync<LightStateResponse>(

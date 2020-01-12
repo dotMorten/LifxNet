@@ -13,52 +13,46 @@ namespace LifxNet
 	{
 		internal static LifxResponse Create(FrameHeader header, MessageType type, UInt32 source, byte[] payload)
 		{
-			LifxResponse response = null;
-			switch(type)
+			switch (type)
 			{
 				case MessageType.DeviceAcknowledgement:
-					response = new AcknowledgementResponse(payload);
-					break;
+					return new AcknowledgementResponse(header, type, payload, source);
 				case MessageType.DeviceStateLabel:
-					response = new StateLabelResponse(payload);
-					break;
+					return new StateLabelResponse(header, type, payload, source);
 				case MessageType.LightState:
-					response = new LightStateResponse(payload);
-					break;
+					return new LightStateResponse(header, type, payload, source);
 				case MessageType.LightStatePower:
-					response = new LightPowerResponse(payload);
-					break;
+					return new LightPowerResponse(header, type, payload, source);
 				case MessageType.DeviceStateVersion:
-					response = new StateVersionResponse(payload);
-					break;
+					return new StateVersionResponse(header, type, payload, source);
 				case MessageType.DeviceStateHostFirmware:
-					response = new StateHostFirmwareResponse(payload);
-					break;
+					return new StateHostFirmwareResponse(header, type, payload, source);
 				case MessageType.DeviceStateService:
-					response = new StateServiceResponse(payload);
-					break;
+					return new StateServiceResponse(header, type, payload, source);
 				default:
-					response = new UnknownResponse(payload);
-					break;
+					return new UnknownResponse(header, type, payload, source);
 			}
-			response.Header = header;
-			response.Type = type;
-			response.Payload = payload;
-			response.Source = source;
-			return response;
 		}
-		internal LifxResponse() { }
-		internal FrameHeader Header { get; private set; }
-		internal byte[] Payload { get; private set; }
-		internal MessageType Type { get; private set; }
-		internal UInt32 Source { get; private set; }
+
+		internal LifxResponse(FrameHeader header, MessageType type, byte[] payload, UInt32 source) 
+		{
+			Header = header;
+			Type = type;
+			Payload = payload;
+			Source = source;
+		}
+
+		internal FrameHeader Header { get; }
+		internal byte[] Payload { get; }
+		internal MessageType Type { get; }
+		internal UInt32 Source { get; }
 	}
 	/// <summary>
 	/// Response to any message sent with ack_required set to 1. 
 	/// </summary>
 	internal class AcknowledgementResponse: LifxResponse
 	{
-		internal AcknowledgementResponse(byte[] payload) : base() { }
+		internal AcknowledgementResponse(FrameHeader header, MessageType type, byte[] payload, UInt32 source) : base(header, type, payload, source) { }
 	}
 	/// <summary>
 	/// Response to GetService message.
@@ -67,32 +61,32 @@ namespace LifxNet
 	/// </summary>
 	internal class StateServiceResponse : LifxResponse
 	{
-		internal StateServiceResponse(byte[] payload) : base()
+		internal StateServiceResponse(FrameHeader header, MessageType type, byte[] payload, UInt32 source) : base(header, type, payload, source)
 		{
 			Service = payload[0];
 			Port = BitConverter.ToUInt32(payload, 1);
 		}
-		public Byte Service { get; set; }
-		public UInt32 Port { get; private set; }
+		public Byte Service { get; }
+		public UInt32 Port { get; }
 	}
 	/// <summary>
 	/// Response to GetLabel message. Provides device label.
 	/// </summary>
 	internal class StateLabelResponse : LifxResponse
 	{
-		internal StateLabelResponse(byte[] payload) : base() {
-
+		internal StateLabelResponse(FrameHeader header, MessageType type, byte[] payload, UInt32 source) : base(header, type, payload, source)
+		{ 
 			if (payload != null)
 				Label = Encoding.UTF8.GetString(payload, 0, payload.Length).Replace("\0", "");
 		}
-		public string Label { get; private set; }
+		public string? Label { get; private set; }
 	}
 	/// <summary>
 	/// Sent by a device to provide the current light state
 	/// </summary>
 	public class LightStateResponse : LifxResponse
 	{
-		internal LightStateResponse(byte[] payload) : base()
+		internal LightStateResponse(FrameHeader header, MessageType type, byte[] payload, UInt32 source) : base(header, type, payload, source)
 		{
 			Hue = BitConverter.ToUInt16(payload, 0);
 			Saturation = BitConverter.ToUInt16(payload, 2);
@@ -128,7 +122,7 @@ namespace LifxNet
 	}
 	internal class LightPowerResponse : LifxResponse
 	{
-		internal LightPowerResponse(byte[] payload) : base()
+		internal LightPowerResponse(FrameHeader header, MessageType type, byte[] payload, UInt32 source) : base(header, type, payload, source)
 		{
 			IsOn = BitConverter.ToUInt16(payload, 0) > 0;
 		}
@@ -140,7 +134,7 @@ namespace LifxNet
 	/// </summary>
 	public class StateVersionResponse : LifxResponse
 	{
-		internal StateVersionResponse(byte[] payload) : base()
+		internal StateVersionResponse(FrameHeader header, MessageType type, byte[] payload, UInt32 source) : base(header, type, payload, source)
 		{
 			Vendor = BitConverter.ToUInt32(payload, 0);
 			Product = BitConverter.ToUInt32(payload, 4);
@@ -164,7 +158,7 @@ namespace LifxNet
 	/// </summary>
 	public class StateHostFirmwareResponse : LifxResponse
 	{
-		internal StateHostFirmwareResponse(byte[] payload) : base()
+		internal StateHostFirmwareResponse(FrameHeader header, MessageType type, byte[] payload, UInt32 source) : base(header, type, payload, source)
 		{
 			var nanoseconds = BitConverter.ToUInt64(payload, 0);
 			Build = Utilities.Epoch.AddMilliseconds(nanoseconds * 0.000001);
@@ -183,7 +177,6 @@ namespace LifxNet
 
 	internal class UnknownResponse : LifxResponse
 	{
-		internal UnknownResponse(byte[] payload) : base() {
-		}
+		internal UnknownResponse(FrameHeader header, MessageType type, byte[] payload, UInt32 source) : base(header, type, payload, source) { }
 	}
 }

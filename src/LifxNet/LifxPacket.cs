@@ -78,11 +78,9 @@ namespace LifxNet
 			{
 				payload = br.ReadBytes(len);
 			}
-			LifxPacket packet = new UnknownPacket(packetType, payload)
+			LifxPacket packet = new UnknownPacket(packetType, payload, bulbAddress, site)
 			{
-				BulbAddress = bulbAddress,
 				TimeStamp = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddMilliseconds(timestamp),
-				Site = site
 			};
 			//packet.Identifier = identifier;
 			return packet;
@@ -90,10 +88,12 @@ namespace LifxNet
 
 		private class UnknownPacket : LifxPacket
 		{
-			public UnknownPacket(ushort packetType, byte[] payload) : base(packetType, payload)
+			public UnknownPacket(ushort packetType, byte[] payload, byte[] bulbAddress, byte[] site) : base(packetType, payload)
 			{
+				BulbAddress = bulbAddress;
+				Site = site;
 			}
-			public byte[] BulbAddress { get; set; }
+			public byte[] BulbAddress { get; }
 			public DateTime TimeStamp { get; set; }
 			public byte[] Site { get; set; }
 		}

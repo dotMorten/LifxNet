@@ -12,21 +12,15 @@ namespace LifxNet
 		/// <summary>
 		/// Turns the device on
 		/// </summary>
-		public Task TurnDeviceOnAsync(Device device)
-		{
-			System.Diagnostics.Debug.WriteLine("Sending TurnDeviceOn to {0}", device.HostName);
-			return SetDevicePowerStateAsync(device, true);
-		}
+		public Task TurnDeviceOnAsync(Device device) => SetDevicePowerStateAsync(device, true);
+
 		/// <summary>
 		/// Turns the device off
 		/// </summary>
 		/// <param name="device"></param>
 		/// <returns></returns>
-		public Task TurnDeviceOffAsync(Device device)
-		{
-			System.Diagnostics.Debug.WriteLine("Sending TurnDeviceOff to {0}", device.HostName);
-			return SetDevicePowerStateAsync(device, false);
-		}
+		public Task TurnDeviceOffAsync(Device device) => SetDevicePowerStateAsync(device, false);
+
 		/// <summary>
 		/// Sets the device power state
 		/// </summary>
@@ -35,10 +29,12 @@ namespace LifxNet
 		/// <returns></returns>
 		public async Task SetDevicePowerStateAsync(Device device, bool isOn)
 		{
-			System.Diagnostics.Debug.WriteLine("Sending TurnDeviceOff to {0}", device.HostName);
+			if (device == null)
+				throw new ArgumentNullException(nameof(device));
+			System.Diagnostics.Debug.WriteLine($"Sending DeviceSetPower({isOn}) to {device.HostName}");
 			FrameHeader header = new FrameHeader()
 			{
-				Identifier = (uint)randomizer.Next(),
+				Identifier = GetNextIdentifier(),
 				AcknowledgeRequired = true
 			};
 
@@ -51,11 +47,14 @@ namespace LifxNet
 		/// </summary>
 		/// <param name="device"></param>
 		/// <returns></returns>
-		public async Task<string> GetDeviceLabelAsync(Device device)
+		public async Task<string?> GetDeviceLabelAsync(Device device)
 		{
+			if (device == null)
+				throw new ArgumentNullException(nameof(device));
+
 			FrameHeader header = new FrameHeader()
 			{
-				Identifier = (uint)randomizer.Next(),
+				Identifier = GetNextIdentifier(),
 				AcknowledgeRequired = false
 			};
 			var resp = await BroadcastMessageAsync<StateLabelResponse>(device.HostName, header, MessageType.DeviceGetLabel);
@@ -70,9 +69,12 @@ namespace LifxNet
 		/// <returns></returns>
 		public async Task SetDeviceLabelAsync(Device device, string label)
 		{
+			if (device == null)
+				throw new ArgumentNullException(nameof(device));
+
 			FrameHeader header = new FrameHeader()
 			{
-				Identifier = (uint)randomizer.Next(),
+				Identifier = GetNextIdentifier(),
 				AcknowledgeRequired = true
 			};
 			var resp = await BroadcastMessageAsync<AcknowledgementResponse>(
@@ -84,9 +86,12 @@ namespace LifxNet
 		/// </summary>
 		public async Task<StateVersionResponse> GetDeviceVersionAsync(Device device)
 		{
+			if (device == null)
+				throw new ArgumentNullException(nameof(device));
+
 			FrameHeader header = new FrameHeader()
 			{
-				Identifier = (uint)randomizer.Next(),
+				Identifier = GetNextIdentifier(),
 				AcknowledgeRequired = false
 			};
 			var resp = await BroadcastMessageAsync<StateVersionResponse>(device.HostName, header, MessageType.DeviceGetVersion);
@@ -99,9 +104,12 @@ namespace LifxNet
 		/// <returns></returns>
 		public async Task<StateHostFirmwareResponse> GetDeviceHostFirmwareAsync(Device device)
 		{
+			if (device == null)
+				throw new ArgumentNullException(nameof(device));
+
 			FrameHeader header = new FrameHeader()
 			{
-				Identifier = (uint)randomizer.Next(),
+				Identifier = GetNextIdentifier(),
 				AcknowledgeRequired = false
 			};
 			var resp = await BroadcastMessageAsync<StateHostFirmwareResponse>(device.HostName, header, MessageType.DeviceGetHostFirmware);
