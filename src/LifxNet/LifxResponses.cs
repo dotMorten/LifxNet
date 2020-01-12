@@ -23,6 +23,8 @@ namespace LifxNet
 					return new LightStateResponse(header, type, payload, source);
 				case MessageType.LightStatePower:
 					return new LightPowerResponse(header, type, payload, source);
+				case MessageType.InfraredState:
+					return new InfraredStateRespone(header, type, payload, source);
 				case MessageType.DeviceStateVersion:
 					return new StateVersionResponse(header, type, payload, source);
 				case MessageType.DeviceStateHostFirmware:
@@ -127,6 +129,15 @@ namespace LifxNet
 			IsOn = BitConverter.ToUInt16(payload, 0) > 0;
 		}
 		public bool IsOn { get; private set; }
+	}
+
+	internal class InfraredStateRespone : LifxResponse
+	{
+		internal InfraredStateRespone(FrameHeader header, MessageType type, byte[] payload, UInt32 source) : base(header, type, payload, source)
+		{
+			Brightness = BitConverter.ToUInt16(payload, 0);
+		}
+		public UInt16 Brightness { get; private set; }
 	}
 
 	/// <summary>

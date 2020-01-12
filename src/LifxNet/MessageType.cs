@@ -42,7 +42,10 @@ namespace LifxNet
 		LightGetPower = 116,
 		LightSetPower = 117,
 		LightStatePower = 118,
-
+		//Infrared
+		InfraredGet = 120,
+		InfraredState = 121,
+		InfraredSet = 122,
 
 		//Unofficial
 		LightGetTemperature = 0x6E,

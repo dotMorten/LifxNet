@@ -203,5 +203,46 @@ namespace LifxNet
 			return BroadcastMessageAsync<LightStateResponse>(
 				bulb.HostName, header, MessageType.LightGet);
 		}
+
+
+		/// <summary>
+		/// Gets the current maximum power level of the Infrared channel
+		/// </summary>
+		/// <param name="bulb"></param>
+		/// <returns></returns>
+		public async Task<UInt16> GetInfraredAsync(LightBulb bulb)
+		{
+			if (bulb == null)
+				throw new ArgumentNullException(nameof(bulb));
+
+			FrameHeader header = new FrameHeader()
+			{
+				Identifier = GetNextIdentifier(),
+				AcknowledgeRequired = true
+			};	
+			return (await BroadcastMessageAsync<InfraredStateRespone>(
+				bulb.HostName, header, MessageType.InfraredGet).ConfigureAwait(false)).Brightness;
+		}
+
+		/// <summary>
+		/// Sets the infrared brightness level
+		/// </summary>
+		/// <param name="device"></param>
+		/// <param name="brightness"></param>
+		/// <returns></returns>
+		public async Task SetInfraredAsync(Device device, UInt16 brightness)
+		{
+			if (device == null)
+				throw new ArgumentNullException(nameof(device));
+			System.Diagnostics.Debug.WriteLine($"Sending SetInfrared({brightness}) to {device.HostName}");
+			FrameHeader header = new FrameHeader()
+			{
+				Identifier = GetNextIdentifier(),
+				AcknowledgeRequired = true
+			};
+
+			_ = await BroadcastMessageAsync<AcknowledgementResponse>(device.HostName, header,
+				MessageType.InfraredSet, (UInt16)brightness).ConfigureAwait(false);
+		}
 	}
 }
