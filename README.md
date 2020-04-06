@@ -4,6 +4,8 @@
 A .NET Standard 1.3 library for LIFX.
 Supports .NET, UWP, Xamarin iOS, Xamarin Android, and any other .NET Platform that has implemented .NET Standard 1.3+.
 
+For Cloud Protocol based implementation, check out [isaacrlevin's repo](https://github.com/isaacrlevin/LifxCloudClient)
+
 ## Sponsoring
 
 If you like this library and use it a lot, consider sponsoring me. Anything helps and encourages me to keep going.
