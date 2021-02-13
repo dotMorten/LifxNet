@@ -1,32 +1,28 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using LifxNet;
 
 namespace SampleApp.NET462
 {
     class Program
     {
-        static LifxNet.LifxClient client;
+        static LifxClient client;
         static void Main(string[] args)
         {
-            var task = LifxNet.LifxClient.CreateAsync();
+            var task = LifxClient.CreateAsync();
             task.Wait();
             client = task.Result;
-            client.DeviceDiscovered += Client_DeviceDiscovered;
-            client.DeviceLost += Client_DeviceLost;
+            client.Discovered += Client_DeviceDiscovered;
+            client.Lost += Client_DeviceLost;
             client.StartDeviceDiscovery();
             Console.ReadKey();
         }
 
-        private static void Client_DeviceLost(object sender, LifxClient.DeviceDiscoveryEventArgs e)
+        private static void Client_DeviceLost(object sender, LifxClient.DiscoveryEventArgs e)
         {
             Console.WriteLine("Device lost");
         }
 
-        private static async void Client_DeviceDiscovered(object sender, LifxClient.DeviceDiscoveryEventArgs e)
+        private static async void Client_DeviceDiscovered(object sender, LifxClient.DiscoveryEventArgs e)
         {
             Console.WriteLine($"Device {e.Device.MacAddressName} found @ {e.Device.HostName}");
             var version = await client.GetDeviceVersionAsync(e.Device);

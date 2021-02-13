@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LifxNet
 {
@@ -22,28 +18,27 @@ namespace LifxNet
 		protected LifxPacket(ushort type, object[] data)
 		{
 			_type = type;
-			using (var ms = new MemoryStream())
-			{
-				StreamWriter bw = new StreamWriter(ms);
-				foreach (var obj in data)
-				{
-					if (obj is byte)
-					{
-						bw.Write((byte)obj);
-					}
-					else if (obj is byte[])
-					{
-						bw.Write((byte[])obj);
-					}
-					else if (obj is UInt16)
-						bw.Write((UInt16)obj);
-					else if (obj is UInt32)
-						bw.Write((UInt32)obj);
-					else
+			using var ms = new MemoryStream();
+			StreamWriter bw = new StreamWriter(ms);
+			foreach (var obj in data) {
+				switch (obj) {
+					case byte b:
+						bw.Write(b);
+						break;
+					case byte[] bytes:
+						bw.Write(bytes);
+						break;
+					case ushort @ushort:
+						bw.Write(@ushort);
+						break;
+					case uint u:
+						bw.Write(u);
+						break;
+					default:
 						throw new NotImplementedException();
 				}
-				_payload = ms.ToArray();
 			}
+			_payload = ms.ToArray();
 		}
 
 		public static LifxPacket FromByteArray(byte[] data)
@@ -73,7 +68,7 @@ namespace LifxNet
 			ulong timestamp = br.ReadUInt64();
 			ushort packetType = br.ReadUInt16(); // ReverseBytes(br.ReadUInt16());
 			byte[] reserved4 = br.ReadBytes(2);
-			byte[] payload = new byte[] { };
+			byte[] payload = { };
 			if (len > 0)
 			{
 				payload = br.ReadBytes(len);

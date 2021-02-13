@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Threading;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace LifxNet
 {
-	public partial class LifxClient : IDisposable
-	{
-		private Dictionary<UInt32, Action<LifxResponse>> taskCompletions = new Dictionary<uint, Action<LifxResponse>>();
+	public partial class LifxClient {
+		private readonly Dictionary<UInt32, Action<LifxResponse>> _taskCompletions = new Dictionary<uint, Action<LifxResponse>>();
 
 		/// <summary>
 		/// Turns a bulb on using the provided transition time
@@ -52,20 +49,19 @@ namespace LifxNet
 		public async Task SetLightPowerAsync(LightBulb bulb, TimeSpan transitionDuration, bool isOn)
 		{
 			if (bulb == null)
-				throw new ArgumentNullException("bulb");
+				throw new ArgumentNullException(nameof(bulb));
 			if (transitionDuration.TotalMilliseconds > UInt32.MaxValue ||
 				transitionDuration.Ticks < 0)
-				throw new ArgumentOutOfRangeException("transitionDuration");
+				throw new ArgumentOutOfRangeException(nameof(transitionDuration));
 
-			FrameHeader header = new FrameHeader()
-			{
+			FrameHeader header = new FrameHeader {
 				Identifier = GetNextIdentifier(),
 				AcknowledgeRequired = true
 			};
 
 			var b = BitConverter.GetBytes((UInt16)transitionDuration.TotalMilliseconds);
 
-			System.Diagnostics.Debug.WriteLine($"Sending LightSetPower(on={isOn},duration={transitionDuration.TotalMilliseconds}ms) to {bulb.HostName}");
+			Debug.WriteLine($"Sending LightSetPower(on={isOn},duration={transitionDuration.TotalMilliseconds}ms) to {bulb.HostName}");
 
 			await BroadcastMessageAsync<AcknowledgementResponse>(bulb.HostName, header, MessageType.LightSetPower,
 				(UInt16)(isOn ? 65535 : 0), b
@@ -82,8 +78,7 @@ namespace LifxNet
 			if (bulb == null)
 				throw new ArgumentNullException(nameof(bulb));
 
-			FrameHeader header = new FrameHeader()
-			{
+			FrameHeader header = new FrameHeader {
 				Identifier = GetNextIdentifier(),
 				AcknowledgeRequired = true
 			};
@@ -143,19 +138,13 @@ namespace LifxNet
 				throw new ArgumentOutOfRangeException("kelvin", "Kelvin must be between 2500 and 9000");
 			}
 
-				System.Diagnostics.Debug.WriteLine("Setting color to {0}", bulb.HostName);
-			FrameHeader header = new FrameHeader()
-			{
+			Debug.WriteLine("Setting color to {0}", bulb.HostName);
+			FrameHeader header = new FrameHeader {
 				Identifier = GetNextIdentifier(),
 				AcknowledgeRequired = true
 			};
-			UInt32 duration = (UInt32)transitionDuration.TotalMilliseconds;
-			var durationBytes = BitConverter.GetBytes(duration);
-			var h = BitConverter.GetBytes(hue);
-			var s = BitConverter.GetBytes(saturation);
-			var b = BitConverter.GetBytes(brightness);
-			var k = BitConverter.GetBytes(kelvin);
-
+			var duration = (UInt32)transitionDuration.TotalMilliseconds;
+			
 			await BroadcastMessageAsync<AcknowledgementResponse>(bulb.HostName, header,
 				MessageType.LightSetColor, (byte)0x00, //reserved
 					hue, saturation, brightness, kelvin, //HSBK
@@ -195,8 +184,7 @@ namespace LifxNet
 		{
 			if (bulb == null)
 				throw new ArgumentNullException(nameof(bulb));
-			FrameHeader header = new FrameHeader()
-			{
+			FrameHeader header = new FrameHeader {
 				Identifier = GetNextIdentifier(),
 				AcknowledgeRequired = false
 			};
@@ -215,12 +203,11 @@ namespace LifxNet
 			if (bulb == null)
 				throw new ArgumentNullException(nameof(bulb));
 
-			FrameHeader header = new FrameHeader()
-			{
+			FrameHeader header = new FrameHeader {
 				Identifier = GetNextIdentifier(),
 				AcknowledgeRequired = true
 			};	
-			return (await BroadcastMessageAsync<InfraredStateRespone>(
+			return (await BroadcastMessageAsync<InfraredStateResponse>(
 				bulb.HostName, header, MessageType.InfraredGet).ConfigureAwait(false)).Brightness;
 		}
 
@@ -234,15 +221,14 @@ namespace LifxNet
 		{
 			if (device == null)
 				throw new ArgumentNullException(nameof(device));
-			System.Diagnostics.Debug.WriteLine($"Sending SetInfrared({brightness}) to {device.HostName}");
-			FrameHeader header = new FrameHeader()
-			{
+			Debug.WriteLine($"Sending SetInfrared({brightness}) to {device.HostName}");
+			FrameHeader header = new FrameHeader {
 				Identifier = GetNextIdentifier(),
 				AcknowledgeRequired = true
 			};
 
 			_ = await BroadcastMessageAsync<AcknowledgementResponse>(device.HostName, header,
-				MessageType.InfraredSet, (UInt16)brightness).ConfigureAwait(false);
+				MessageType.InfraredSet, brightness).ConfigureAwait(false);
 		}
 	}
 }

@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Threading;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace LifxNet
 {
-	public partial class LifxClient : IDisposable
-	{
+	public partial class LifxClient {
 		/// <summary>
 		/// Turns the device on
 		/// </summary>
@@ -31,9 +27,8 @@ namespace LifxNet
 		{
 			if (device == null)
 				throw new ArgumentNullException(nameof(device));
-			System.Diagnostics.Debug.WriteLine($"Sending DeviceSetPower({isOn}) to {device.HostName}");
-			FrameHeader header = new FrameHeader()
-			{
+			Debug.WriteLine($"Sending DeviceSetPower({isOn}) to {device.HostName}");
+			FrameHeader header = new FrameHeader {
 				Identifier = GetNextIdentifier(),
 				AcknowledgeRequired = true
 			};
@@ -52,8 +47,7 @@ namespace LifxNet
 			if (device == null)
 				throw new ArgumentNullException(nameof(device));
 
-			FrameHeader header = new FrameHeader()
-			{
+			FrameHeader header = new FrameHeader {
 				Identifier = GetNextIdentifier(),
 				AcknowledgeRequired = false
 			};
@@ -72,8 +66,7 @@ namespace LifxNet
 			if (device == null)
 				throw new ArgumentNullException(nameof(device));
 
-			FrameHeader header = new FrameHeader()
-			{
+			FrameHeader header = new FrameHeader {
 				Identifier = GetNextIdentifier(),
 				AcknowledgeRequired = true
 			};
@@ -89,8 +82,7 @@ namespace LifxNet
 			if (device == null)
 				throw new ArgumentNullException(nameof(device));
 
-			FrameHeader header = new FrameHeader()
-			{
+			FrameHeader header = new FrameHeader {
 				Identifier = GetNextIdentifier(),
 				AcknowledgeRequired = false
 			};
@@ -106,8 +98,7 @@ namespace LifxNet
 			if (device == null)
 				throw new ArgumentNullException(nameof(device));
 
-			FrameHeader header = new FrameHeader()
-			{
+			FrameHeader header = new FrameHeader {
 				Identifier = GetNextIdentifier(),
 				AcknowledgeRequired = false
 			};

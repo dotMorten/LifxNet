@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LifxNet
 {
@@ -39,7 +35,7 @@ namespace LifxNet
 			}
 
 			double s = (max == 0) ? 0.0 : (1.0 - (min / max));
-			return new UInt16[] {
+			return new[] {
 				(UInt16)(h / 360 * 65535),
 				(UInt16)(s * 65535),
 				(UInt16)(max * 65535)

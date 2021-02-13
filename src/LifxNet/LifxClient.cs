@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using System.Net.Sockets;
-using System.Net;
 
 namespace LifxNet
 {
@@ -62,27 +63,23 @@ namespace LifxNet
             });
         }
 
-        private void HandleIncomingMessages(byte[] data, System.Net.IPEndPoint endpoint) 
+        private void HandleIncomingMessages(byte[] data, IPEndPoint endpoint) 
 		{
 			var remote = endpoint;
 			var msg = ParseMessage(data);
-			if (msg.Type == MessageType.DeviceStateService)
-			{
-				ProcessDeviceDiscoveryMessage(remote.Address, remote.Port, msg);
+			switch (msg.Type) {
+				case MessageType.DeviceStateService:
+					ProcessDeviceDiscoveryMessage(remote.Address, msg);
+					break;
+				default:
+					if (_taskCompletions.ContainsKey(msg.Source))
+					{
+						var tcs = _taskCompletions[msg.Source];
+						tcs(msg);
+					}
+					break;
 			}
-			else
-			{
-				if (taskCompletions.ContainsKey(msg.Source))
-				{
-					var tcs = taskCompletions[msg.Source];
-					tcs(msg);
-				}
-				else
-				{
-					//TODO
-				}
-			}
-			System.Diagnostics.Debug.WriteLine("Received from {0}:{1}", remote.ToString(),
+			Debug.WriteLine("Received from {0}:{1}", remote,
 				string.Join(",", (from a in data select a.ToString("X2")).ToArray()));
 
 		}
@@ -143,12 +140,12 @@ namespace LifxNet
 				typeof(T) != typeof(UnknownResponse))
 			{
 				tcs = new TaskCompletionSource<T>();
-				Action<LifxResponse> action = (r) =>
+				Action<LifxResponse> action = r =>
 				{
 					if (r.GetType() == typeof(T))
 						tcs.TrySetResult((T)r);
 				};
-				taskCompletions[header.Identifier] = action;
+				_taskCompletions[header.Identifier] = action;
 			}
 
             using (MemoryStream stream = new MemoryStream())
@@ -160,10 +157,10 @@ namespace LifxNet
 			//{
 			//	await WritePacketToStreamAsync(stream, header, (UInt16)type, payload).ConfigureAwait(false);
 			//}
-			T result = default(T);
+			T result = default;
 			if(tcs != null)
 			{
-				var _ = Task.Delay(1000).ContinueWith((t) =>
+				var _ = Task.Delay(1000).ContinueWith(t =>
 				{
 					if (!t.IsCompleted)
 						tcs.TrySetException(new TimeoutException());
@@ -173,7 +170,7 @@ namespace LifxNet
 				}
 				finally
 				{
-					taskCompletions.Remove(header.Identifier);
+					_taskCompletions.Remove(header.Identifier);
 				}
 			}
 			return result;
@@ -208,7 +205,7 @@ namespace LifxNet
 
 		private void WritePacketToStream(Stream outStream, FrameHeader header, UInt16 type, byte[] payload)
 		{
-			using (var dw = new BinaryWriter(outStream) { /*ByteOrder = ByteOrder.LittleEndian*/ })
+			using (var dw = new BinaryWriter(outStream))
 			{
 				//BinaryWriter bw = new BinaryWriter(ms);
 				#region Frame
@@ -216,7 +213,7 @@ namespace LifxNet
 				dw.Write((UInt16)((payload != null ? payload.Length : 0) + 36)); //length
 																					   // origin (2 bits, must be 0), reserved (1 bit, must be 0), addressable (1 bit, must be 1), protocol 12 bits must be 0x400) = 0x1400
 				dw.Write((UInt16)0x3400); //protocol
-				dw.Write((UInt32)header.Identifier); //source identifier - unique value set by the client, used by responses. If 0, responses are broadcasted instead
+				dw.Write(header.Identifier); //source identifier - unique value set by the client, used by responses. If 0, responses are broadcasted instead
 				#endregion Frame
 
 				#region Frame address
@@ -243,7 +240,7 @@ namespace LifxNet
 				//device in any message that is sent in response to a message sent by the client. This allows the client
 				//to distinguish between different messages sent with the same source identifier in the Frame. See
 				//ack_required and res_required fields in the Frame Address.
-				dw.Write((byte)header.Sequence);
+				dw.Write(header.Sequence);
 				#endregion Frame address
 
 				#region Protocol Header

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace LifxNet
 {
@@ -24,7 +22,7 @@ namespace LifxNet
 				case MessageType.LightStatePower:
 					return new LightPowerResponse(header, type, payload, source);
 				case MessageType.InfraredState:
-					return new InfraredStateRespone(header, type, payload, source);
+					return new InfraredStateResponse(header, type, payload, source);
 				case MessageType.DeviceStateVersion:
 					return new StateVersionResponse(header, type, payload, source);
 				case MessageType.DeviceStateHostFirmware:
@@ -104,18 +102,17 @@ namespace LifxNet
 			Service = payload[0];
 			Port = BitConverter.ToUInt32(payload, 1);
 		}
-		public Byte Service { get; }
-		public UInt32 Port { get; }
+
+		private Byte Service { get; }
+		private UInt32 Port { get; }
 	}
 	/// <summary>
 	/// Response to GetLabel message. Provides device label.
 	/// </summary>
 	internal class StateLabelResponse : LifxResponse
 	{
-		internal StateLabelResponse(FrameHeader header, MessageType type, byte[] payload, UInt32 source) : base(header, type, payload, source)
-		{ 
-			if (payload != null)
-				Label = Encoding.UTF8.GetString(payload, 0, payload.Length).Replace("\0", "");
+		internal StateLabelResponse(FrameHeader header, MessageType type, byte[] payload, UInt32 source) : base(header, type, payload, source) {
+			Label = Encoding.UTF8.GetString(payload, 0, payload.Length).Replace("\0", "");
 		}
 		public string? Label { get; private set; }
 	}
@@ -167,9 +164,9 @@ namespace LifxNet
 		public bool IsOn { get; private set; }
 	}
 
-	internal class InfraredStateRespone : LifxResponse
+	internal class InfraredStateResponse : LifxResponse
 	{
-		internal InfraredStateRespone(FrameHeader header, MessageType type, byte[] payload, UInt32 source) : base(header, type, payload, source)
+		internal InfraredStateResponse(FrameHeader header, MessageType type, byte[] payload, UInt32 source) : base(header, type, payload, source)
 		{
 			Brightness = BitConverter.ToUInt16(payload, 0);
 		}
