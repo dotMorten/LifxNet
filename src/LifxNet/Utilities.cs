@@ -10,7 +10,7 @@ namespace LifxNet
 	{
 		public static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         
-		public static UInt16[] RgbToHsl(Color rgb)
+		public static UInt16[] RgbToHsl(LifxColor rgb)
 		{
 			// normalize red, green and blue values
 			double r = (rgb.R / 255.0);

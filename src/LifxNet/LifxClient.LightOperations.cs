@@ -95,24 +95,24 @@ namespace LifxNet
 		/// Sets color and temperature for a bulb
 		/// </summary>
 		/// <param name="bulb"></param>
-		/// <param name="color"></param>
+		/// <param name="lifxColor"></param>
 		/// <param name="kelvin"></param>
 		/// <returns></returns>
-		public Task SetColorAsync(LightBulb bulb, Color color, UInt16 kelvin) => SetColorAsync(bulb, color, kelvin, TimeSpan.Zero);
+		public Task SetColorAsync(LightBulb bulb, LifxColor lifxColor, UInt16 kelvin) => SetColorAsync(bulb, lifxColor, kelvin, TimeSpan.Zero);
 
 		/// <summary>
 		/// Sets color and temperature for a bulb and uses a transition time to the provided state
 		/// </summary>
 		/// <param name="bulb"></param>
-		/// <param name="color"></param>
+		/// <param name="lifxColor"></param>
 		/// <param name="kelvin"></param>
 		/// <param name="transitionDuration"></param>
 		/// <returns></returns>
-		public Task SetColorAsync(LightBulb bulb, Color color, UInt16 kelvin, TimeSpan transitionDuration)
+		public Task SetColorAsync(LightBulb bulb, LifxColor lifxColor, UInt16 kelvin, TimeSpan transitionDuration)
 		{
 			if (bulb == null)
 				throw new ArgumentNullException(nameof(bulb));
-			var hsl = Utilities.RgbToHsl(color);
+			var hsl = Utilities.RgbToHsl(lifxColor);
 			return SetColorAsync(bulb, hsl[0], hsl[1], hsl[2], kelvin, transitionDuration);
 		}
 
