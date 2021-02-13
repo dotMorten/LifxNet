@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace LifxNet
+﻿namespace LifxNet
 {
 	internal enum MessageType : ushort
 	{
@@ -54,7 +48,14 @@ namespace LifxNet
 		InfraredGet = 120,
 		InfraredState = 121,
 		InfraredSet = 122,
-
+		SetColorZones = 501,
+		GetColorZones = 502,
+		StateZone = 503,
+		StateMultiZone = 506,
+		SetExtendedColorZones = 510,
+		GetExtendedColorZones = 511,
+		StateExtendedColorZones = 512,
+		
 		//Unofficial
 		LightGetTemperature = 0x6E,
         //LightStateTemperature = 0x6f,

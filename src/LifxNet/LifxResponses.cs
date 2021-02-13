@@ -31,6 +31,8 @@ namespace LifxNet
 					return new StateHostFirmwareResponse(header, type, payload, source);
 				case MessageType.DeviceStateService:
 					return new StateServiceResponse(header, type, payload, source);
+				case MessageType.StateExtendedColorZones:
+					return new StateExtendedColorZonesResponse(header, type, payload, source);
 				default:
 					return new UnknownResponse(header, type, payload, source);
 			}
@@ -55,6 +57,40 @@ namespace LifxNet
 	internal class AcknowledgementResponse: LifxResponse
 	{
 		internal AcknowledgementResponse(FrameHeader header, MessageType type, byte[] payload, UInt32 source) : base(header, type, payload, source) { }
+	}
+	
+	/// <summary>
+	/// Get the list of colors currently being displayed by zones
+	/// </summary>
+	public class StateExtendedColorZonesResponse : LifxResponse
+	{
+		internal StateExtendedColorZonesResponse(FrameHeader header, MessageType type, byte[] payload, UInt32 source) : base(header, type, payload, source)
+		{
+			Colors = new List<LifxColor>();
+			Count = BitConverter.ToUInt16(payload, 0);
+			Index = BitConverter.ToUInt16(payload, 2);
+			for (var i = 4; i < payload.Length; i += 4) {
+				if (i + 3 < payload.Length) continue;
+				var h = BitConverter.ToInt16(payload, i);
+				var s = BitConverter.ToInt16(payload, i + 1);
+				var b = BitConverter.ToInt16(payload, i + 2);
+				var k = BitConverter.ToInt16(payload, i + 3);
+				Colors.Add(new LifxColor(h,s,b,k));
+			}
+		}
+		/// <summary>
+		/// Count - total number of zones on the device
+		/// </summary>
+		public UInt16 Count { get; private set; }
+		/// <summary>
+		/// Index - Zone the message starts from
+		/// </summary>
+		public UInt16 Index { get; private set; }
+		/// <summary>
+		/// The list of colors returned by the message
+		/// </summary>
+		public List<LifxColor> Colors { get; private set; }
+		
 	}
 	/// <summary>
 	/// Response to GetService message.
