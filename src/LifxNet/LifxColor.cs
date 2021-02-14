@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
 
@@ -64,6 +65,19 @@ namespace LifxNet
 
         public LifxColor(Color color) {
             _color = color;
+        }
+
+        /// <summary>
+        /// Serialize our color to a byte array
+        /// </summary>
+        /// <returns>HSBK formatted array of bytes. I think</returns>
+        public byte[] ToBytes() {
+            var output = new List<Byte>();
+            output.AddRange(BitConverter.GetBytes(Hue));
+            output.AddRange(BitConverter.GetBytes(Saturation));
+            output.AddRange(BitConverter.GetBytes(Brightness));
+            output.AddRange(BitConverter.GetBytes(2700));
+            return output.ToArray();
         }
 
 

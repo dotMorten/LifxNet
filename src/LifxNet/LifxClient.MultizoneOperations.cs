@@ -56,14 +56,10 @@ namespace LifxNet {
 				Identifier = GetNextIdentifier(),
 				AcknowledgeRequired = true
 			};
-			var cArgs = new List<Object>();
 			uint duration = (uint)transitionDuration.TotalMilliseconds;
+			var cArgs = new List<byte>();
 			foreach (var color in colors) {
-				var hsl = Utilities.RgbToHsl(color);
-				cArgs.Add(hsl[0]);
-				cArgs.Add(hsl[1]);
-				cArgs.Add(hsl[2]);
-				cArgs.Add(2700);
+				cArgs.AddRange(color.ToBytes());
 			}
 			
 			await BroadcastMessageAsync<AcknowledgementResponse>(bulb.HostName, header,
