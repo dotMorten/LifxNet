@@ -31,6 +31,10 @@ namespace LifxNet
 					return new StateServiceResponse(header, type, payload, source);
 				case MessageType.StateExtendedColorZones:
 					return new StateExtendedColorZonesResponse(header, type, payload, source);
+				case MessageType.StateZone:
+					return new StateZoneResponse(header, type, payload, source);
+				case MessageType.StateMultiZone:
+					return new StateMultiZoneResponse(header, type, payload, source);
 				default:
 					return new UnknownResponse(header, type, payload, source);
 			}
@@ -56,6 +60,73 @@ namespace LifxNet
 	{
 		internal AcknowledgementResponse(FrameHeader header, MessageType type, byte[] payload, UInt32 source) : base(header, type, payload, source) { }
 	}
+	
+	/// <summary>
+	/// The StateZone message represents the state of a single zone with the index field indicating which zone is represented. The count field contains the count of the total number of zones available on the device.
+	/// </summary>
+	public class StateZoneResponse : LifxResponse
+	{
+		internal StateZoneResponse(FrameHeader header, MessageType type, byte[] payload, UInt32 source) : base(header, type, payload, source)
+		{
+			Count = BitConverter.ToUInt16(payload, 0);
+			Index = BitConverter.ToUInt16(payload, 2);
+			var h = BitConverter.ToInt16(payload, 4);
+			var s = BitConverter.ToInt16(payload, 6);
+			var b = BitConverter.ToInt16(payload, 8);
+			var k = BitConverter.ToInt16(payload, 10);
+			Color = new LifxColor(h, s, b, k);
+
+		}
+		/// <summary>
+		/// Count - total number of zones on the device
+		/// </summary>
+		public UInt16 Count { get; private set; }
+		/// <summary>
+		/// Index - Zone the message starts from
+		/// </summary>
+		public UInt16 Index { get; private set; }
+		/// <summary>
+		/// The list of colors returned by the message
+		/// </summary>
+		public LifxColor Color { get; private set; }
+		
+	}
+	
+	
+	/// <summary>
+	/// Get the list of colors currently being displayed by zones
+	/// </summary>
+	public class StateMultiZoneResponse : LifxResponse
+	{
+		internal StateMultiZoneResponse(FrameHeader header, MessageType type, byte[] payload, UInt32 source) : base(header, type, payload, source)
+		{
+			Colors = new List<LifxColor>();
+			Count = BitConverter.ToUInt16(payload, 0);
+			Index = BitConverter.ToUInt16(payload, 2);
+			for (var i = 4; i < payload.Length; i += 4) {
+				if (i + 3 < payload.Length) continue;
+				var h = BitConverter.ToInt16(payload, i);
+				var s = BitConverter.ToInt16(payload, i + 1);
+				var b = BitConverter.ToInt16(payload, i + 2);
+				var k = BitConverter.ToInt16(payload, i + 3);
+				Colors.Add(new LifxColor(h,s,b,k));
+			}
+		}
+		/// <summary>
+		/// Count - total number of zones on the device
+		/// </summary>
+		public UInt16 Count { get; private set; }
+		/// <summary>
+		/// Index - Zone the message starts from
+		/// </summary>
+		public UInt16 Index { get; private set; }
+		/// <summary>
+		/// The list of colors returned by the message
+		/// </summary>
+		public List<LifxColor> Colors { get; private set; }
+		
+	}
+	
 	
 	/// <summary>
 	/// Get the list of colors currently being displayed by zones
