@@ -98,21 +98,27 @@ namespace LifxNet
 
 		{
 			List<byte> payload = new List<byte>();
-			if (args != null)
-			{
-				foreach (var arg in args)
-				{
-					if (arg is UInt16)
-						payload.AddRange(BitConverter.GetBytes((UInt16)arg));
-					else if (arg is UInt32)
-						payload.AddRange(BitConverter.GetBytes((UInt32)arg));
-					else if (arg is byte)
-						payload.Add((byte)arg);
-					else if (arg is byte[])
-						payload.AddRange((byte[])arg);
-					else if (arg is string)
-						payload.AddRange(Encoding.UTF8.GetBytes(((string)arg).PadRight(32).Take(32).ToArray())); //All strings are 32 bytes
-					else
+			foreach (var arg in args) {
+				switch (arg) {
+					case ushort @ushort:
+						payload.AddRange(BitConverter.GetBytes(@ushort));
+						break;
+					case uint u:
+						payload.AddRange(BitConverter.GetBytes(u));
+						break;
+					case byte b:
+						payload.Add(b);
+						break;
+					case byte[] bytes:
+						payload.AddRange(bytes);
+						break;
+					case string s:
+						payload.AddRange(Encoding.UTF8.GetBytes(s.PadRight(32).Take(32).ToArray())); //All strings are 32 bytes
+						break;
+					case LifxColor c:
+						payload.AddRange(c.ToBytes());
+						break;
+					default:
 						throw new NotSupportedException(args.GetType().FullName);
 				}
 			}
