@@ -2,8 +2,7 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 
-namespace LifxNet
-{
+namespace LifxNet {
 	public partial class LifxClient {
 		/// <summary>
 		/// Turns the device on
@@ -23,8 +22,7 @@ namespace LifxNet
 		/// <param name="device"></param>
 		/// <param name="isOn"></param>
 		/// <returns></returns>
-		public async Task SetDevicePowerStateAsync(Device device, bool isOn)
-		{
+		public async Task SetDevicePowerStateAsync(Device device, bool isOn) {
 			if (device == null)
 				throw new ArgumentNullException(nameof(device));
 			Debug.WriteLine($"Sending DeviceSetPower({isOn}) to {device.HostName}");
@@ -34,7 +32,7 @@ namespace LifxNet
 			};
 
 			_ = await BroadcastMessageAsync<AcknowledgementResponse>(device.HostName, header,
-				MessageType.DeviceSetPower, (UInt16)(isOn ? 65535 : 0)).ConfigureAwait(false);
+				MessageType.DeviceSetPower, (UInt16) (isOn ? 65535 : 0)).ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -42,8 +40,7 @@ namespace LifxNet
 		/// </summary>
 		/// <param name="device"></param>
 		/// <returns></returns>
-		public async Task<string?> GetDeviceLabelAsync(Device device)
-		{
+		public async Task<string?> GetDeviceLabelAsync(Device device) {
 			if (device == null)
 				throw new ArgumentNullException(nameof(device));
 
@@ -51,7 +48,8 @@ namespace LifxNet
 				Identifier = GetNextIdentifier(),
 				AcknowledgeRequired = false
 			};
-			var resp = await BroadcastMessageAsync<StateLabelResponse>(device.HostName, header, MessageType.DeviceGetLabel).ConfigureAwait(false);
+			var resp = await BroadcastMessageAsync<StateLabelResponse>(device.HostName, header,
+				MessageType.DeviceGetLabel).ConfigureAwait(false);
 			return resp.Label;
 		}
 
@@ -61,8 +59,7 @@ namespace LifxNet
 		/// <param name="device"></param>
 		/// <param name="label"></param>
 		/// <returns></returns>
-		public async Task SetDeviceLabelAsync(Device device, string label)
-		{
+		public async Task SetDeviceLabelAsync(Device device, string label) {
 			if (device == null)
 				throw new ArgumentNullException(nameof(device));
 
@@ -77,8 +74,7 @@ namespace LifxNet
 		/// <summary>
 		/// Gets the device version
 		/// </summary>
-		public Task<StateVersionResponse> GetDeviceVersionAsync(Device device)
-		{
+		public Task<StateVersionResponse> GetDeviceVersionAsync(Device device) {
 			if (device == null)
 				throw new ArgumentNullException(nameof(device));
 
@@ -88,13 +84,13 @@ namespace LifxNet
 			};
 			return BroadcastMessageAsync<StateVersionResponse>(device.HostName, header, MessageType.DeviceGetVersion);
 		}
+
 		/// <summary>
 		/// Gets the device's host firmware
 		/// </summary>
 		/// <param name="device"></param>
 		/// <returns></returns>
-		public Task<StateHostFirmwareResponse> GetDeviceHostFirmwareAsync(Device device)
-		{
+		public Task<StateHostFirmwareResponse> GetDeviceHostFirmwareAsync(Device device) {
 			if (device == null)
 				throw new ArgumentNullException(nameof(device));
 
@@ -102,7 +98,8 @@ namespace LifxNet
 				Identifier = GetNextIdentifier(),
 				AcknowledgeRequired = false
 			};
-			return BroadcastMessageAsync<StateHostFirmwareResponse>(device.HostName, header, MessageType.DeviceGetHostFirmware);
+			return BroadcastMessageAsync<StateHostFirmwareResponse>(device.HostName, header,
+				MessageType.DeviceGetHostFirmware);
 		}
 	}
 }

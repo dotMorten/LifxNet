@@ -1,7 +1,5 @@
-﻿namespace LifxNet
-{
-	internal enum MessageType : ushort
-	{
+﻿namespace LifxNet {
+	internal enum MessageType : ushort {
 		//Device Messages
 		DeviceGetService = 0x02,
 		DeviceStateService = 0x03,
@@ -35,6 +33,7 @@
 		DeviceStateGroup = 53,
 		DeviceEchoRequest = 58,
 		DeviceEchoResponse = 59,
+
 		//Light messages
 		LightGet = 101,
 		LightSetColor = 102,
@@ -44,6 +43,7 @@
 		LightSetPower = 117,
 		LightStatePower = 118,
 		LightSetWaveformOptional = 119,
+
 		//Infrared
 		InfraredGet = 120,
 		InfraredState = 121,
@@ -55,10 +55,11 @@
 		SetExtendedColorZones = 510,
 		GetExtendedColorZones = 511,
 		StateExtendedColorZones = 512,
-		
+
 		//Unofficial
 		LightGetTemperature = 0x6E,
-        //LightStateTemperature = 0x6f,
+
+		//LightStateTemperature = 0x6f,
 		SetLightBrightness = 0x68
 	}
 }
