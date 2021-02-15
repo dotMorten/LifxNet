@@ -1,8 +1,8 @@
 
 # LifxNet
 
-A .NET Standard 1.3 library for LIFX.
-Supports .NET, UWP, Xamarin iOS, Xamarin Android, and any other .NET Platform that has implemented .NET Standard 1.3+.
+A .NET Standard 2.0 library for LIFX.
+Supports .NET, UWP, Xamarin iOS, Xamarin Android, and any other .NET Platform that has implemented .NET Standard 2.0+.
 
 For Cloud Protocol based implementation, check out [isaacrlevin's repo](https://github.com/isaacrlevin/LifxCloudClient)
 
@@ -22,14 +22,14 @@ PM> Install-Package LifxNet
 
 Tested with LIFX 2.0 Firmware.
 
-Based on the official [LIFX protocol docs](https://github.com/LIFX/lifx-protocol-docs)
+Based on the official [LIFX protocol docs](https://lan.developer.lifx.com/docs)
 
 ####Usage
 
 ```csharp
-	client = await LifxNet.LifxClient.CreateAsync();
-	client.DeviceDiscovered += Client_DeviceDiscovered;
-	client.DeviceLost += Client_DeviceLost;
+	client = new LifxClient();
+	client.Discovered += Client_DeviceDiscovered;
+	client.Lost += Client_DeviceLost;
 	client.StartDeviceDiscovery();
 
 ...

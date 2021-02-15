@@ -14,6 +14,13 @@ namespace LifxNet {
 		private Color _color;
 
 		/// <summary>
+		/// Create a new black LifxColor
+		/// </summary>
+		public LifxColor() {
+			_color = Color.FromArgb(255, 0, 0, 0);
+		}
+
+		/// <summary>
 		/// Red
 		/// </summary>
 		public byte R {

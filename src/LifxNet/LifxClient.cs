@@ -14,35 +14,35 @@ namespace LifxNet {
 	/// </summary>
 	public partial class LifxClient {
 		private const int Port = 56700;
-		private UdpClient? _socket;
+		private readonly UdpClient _socket;
 		private bool _isRunning;
 
-		private LifxClient() {
-		}
 
 		/// <summary>
-		/// Creates a new LIFX client.
+		/// Create our client directly, and instantiate a new UDP client
 		/// </summary>
-		/// <returns>client</returns>
-		public static Task<LifxClient> CreateAsync() {
-			LifxClient client = new LifxClient();
-			client.Initialize();
-			return Task.FromResult(client);
-		}
-
-		private void Initialize() {
+		public LifxClient() {
 			IPEndPoint end = new IPEndPoint(IPAddress.Any, Port);
-			_socket = new UdpClient(end);
-			_socket.Client.Blocking = false;
-			_socket.DontFragment = true;
+			_socket = new UdpClient(end) {Client = {Blocking = false}, DontFragment = true};
 			_socket.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
 			_isRunning = true;
 			StartReceiveLoop();
 		}
+		/// <summary>
+		/// Create our client directly with a re-usable UDP client.
+		/// </summary>
+		/// <param name="client">Optional UDPClient.</param>
+		public LifxClient(UdpClient client) {
+			_socket = client;
+			_isRunning = true;
+			StartReceiveLoop();			
+		}
+
+		
 
 		private void StartReceiveLoop() {
 			Task.Run(async () => {
-				while (_isRunning && _socket != null)
+				while (_isRunning)
 					try {
 						var result = await _socket.ReceiveAsync();
 						if (result.Buffer.Length > 0) {
@@ -142,7 +142,7 @@ namespace LifxNet {
 			}
 
 			using (MemoryStream stream = new MemoryStream()) {
-				WritePacketToStream(stream, header, (UInt16) type, payload);
+				WritePacketToStream(stream, header, (ushort) type, payload);
 				var msg = stream.ToArray();
 				await _socket.SendAsync(msg, msg.Length, hostName, Port);
 			}
@@ -189,10 +189,10 @@ namespace LifxNet {
 			header.AtTime = Utilities.Epoch.AddMilliseconds(nanoseconds * 0.000001);
 			var type = (MessageType) br.ReadUInt16();
 			ms.Seek(2, SeekOrigin.Current); //skip reserved
-			return LifxResponse.Create(header, type, source, size > 36 ? br.ReadBytes(size - 36) : new byte[] { });
+			return LifxResponse.Create(header, type, source, new Payload(size > 36 ? br.ReadBytes(size - 36) : new byte[] { }));
 		}
 
-		private static void WritePacketToStream(Stream outStream, FrameHeader header, UInt16 type, byte[] payload) {
+		private static void WritePacketToStream(Stream outStream, FrameHeader header, ushort type, byte[] payload) {
 			using var dw = new BinaryWriter(outStream);
 			//BinaryWriter bw = new BinaryWriter(ms);
 
@@ -203,7 +203,7 @@ namespace LifxNet {
 			// origin (2 bits, must be 0), reserved (1 bit, must be 0), addressable (1 bit, must be 1), protocol 12 bits must be 0x400) = 0x1400
 			dw.Write((ushort) 0x3400); //protocol
 			dw.Write(header
-				.Identifier); //source identifier - unique value set by the client, used by responses. If 0, responses are broadcasted instead
+				.Identifier); //source identifier - unique value set by the client, used by responses. If 0, responses are broadcast instead
 
 			#endregion Frame
 
@@ -244,26 +244,25 @@ namespace LifxNet {
 			//of a message that will return a non-zero at_time value
 			if (header.AtTime > DateTime.MinValue) {
 				var time = header.AtTime.ToUniversalTime();
-				dw.Write((UInt64) (time - new DateTime(1970, 01, 01)).TotalMilliseconds * 10); //timestamp
+				dw.Write((ulong) (time - new DateTime(1970, 01, 01)).TotalMilliseconds * 10); //timestamp
 			} else {
-				dw.Write((UInt64) 0);
+				dw.Write((ulong) 0);
 			}
 
 			#endregion Protocol Header
 
 			dw.Write(type); //packet _type
-			dw.Write((UInt16) 0); //reserved
-			if (payload != null)
-				dw.Write(payload);
+			dw.Write((ushort) 0); //reserved
+			dw.Write(payload);
 			dw.Flush();
 		}
 	}
 
 	internal class FrameHeader {
-		public UInt32 Identifier;
+		public uint Identifier;
 		public byte Sequence;
 		public bool AcknowledgeRequired;
-		public bool ResponseRequired;
+		public readonly bool ResponseRequired;
 		public byte[] TargetMacAddress;
 		public DateTime AtTime;
 
@@ -278,7 +277,6 @@ namespace LifxNet {
 
 		public string TargetMacAddressName {
 			get {
-				if (TargetMacAddress == null) return string.Empty;
 				return string.Join(":", TargetMacAddress.Take(6).Select(tb => tb.ToString("X2")).ToArray());
 			}
 		}

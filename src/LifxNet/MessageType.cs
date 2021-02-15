@@ -48,6 +48,7 @@
 		InfraredGet = 120,
 		InfraredState = 121,
 		InfraredSet = 122,
+		//Multi zone
 		SetColorZones = 501,
 		GetColorZones = 502,
 		StateZone = 503,
@@ -55,7 +56,13 @@
 		SetExtendedColorZones = 510,
 		GetExtendedColorZones = 511,
 		StateExtendedColorZones = 512,
-
+		//Tile
+		GetDeviceChain = 701,
+		StateDeviceChain = 702,
+		SetUserPosition = 703,
+		GetTileState64 = 707,
+		StateTileState64 = 711,
+		SetTileState64 = 715,
 		//Unofficial
 		LightGetTemperature = 0x6E,
 

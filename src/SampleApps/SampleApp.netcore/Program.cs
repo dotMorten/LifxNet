@@ -5,15 +5,13 @@ namespace SampleApp.NET462
 {
     class Program
     {
-        static LifxClient client;
+        static LifxClient _client;
         static void Main(string[] args)
         {
-            var task = LifxClient.CreateAsync();
-            task.Wait();
-            client = task.Result;
-            client.Discovered += Client_DeviceDiscovered;
-            client.Lost += Client_DeviceLost;
-            client.StartDeviceDiscovery();
+            _client = new LifxClient();
+            _client.Discovered += Client_DeviceDiscovered;
+            _client.Lost += Client_DeviceLost;
+            _client.StartDeviceDiscovery();
             Console.ReadKey();
         }
 
@@ -25,9 +23,9 @@ namespace SampleApp.NET462
         private static async void Client_DeviceDiscovered(object sender, LifxClient.DiscoveryEventArgs e)
         {
             Console.WriteLine($"Device {e.Device.MacAddressName} found @ {e.Device.HostName}");
-            var version = await client.GetDeviceVersionAsync(e.Device);
+            var version = await _client.GetDeviceVersionAsync(e.Device);
             //var label = await client.GetDeviceLabelAsync(e.Device);
-            var state = await client.GetLightStateAsync(e.Device as LightBulb);
+            var state = await _client.GetLightStateAsync(e.Device as LightBulb);
             Console.WriteLine($"{state.Label}\n\tIs on: {state.IsOn}\n\tHue: {state.Hue}\n\tSaturation: {state.Saturation}\n\tBrightness: {state.Brightness}\n\tTemperature: {state.Kelvin}");
         }
     }

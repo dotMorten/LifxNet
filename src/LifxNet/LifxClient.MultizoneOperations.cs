@@ -23,7 +23,7 @@ namespace LifxNet {
 			TimeSpan transitionDuration) {
 			if (bulb == null)
 				throw new ArgumentNullException(nameof(bulb));
-			if (transitionDuration.TotalMilliseconds > UInt32.MaxValue ||
+			if (transitionDuration.TotalMilliseconds > uint.MaxValue ||
 			    transitionDuration.Ticks < 0) {
 				throw new ArgumentOutOfRangeException(nameof(transitionDuration));
 			}
@@ -55,7 +55,7 @@ namespace LifxNet {
 			List<LifxColor> colors) {
 			if (bulb == null)
 				throw new ArgumentNullException(nameof(bulb));
-			if (transitionDuration.TotalMilliseconds > UInt32.MaxValue ||
+			if (transitionDuration.TotalMilliseconds > uint.MaxValue ||
 			    transitionDuration.Ticks < 0) {
 				throw new ArgumentOutOfRangeException(nameof(transitionDuration));
 			}

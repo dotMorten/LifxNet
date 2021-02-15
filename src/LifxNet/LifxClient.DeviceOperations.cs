@@ -32,7 +32,7 @@ namespace LifxNet {
 			};
 
 			_ = await BroadcastMessageAsync<AcknowledgementResponse>(device.HostName, header,
-				MessageType.DeviceSetPower, (UInt16) (isOn ? 65535 : 0)).ConfigureAwait(false);
+				MessageType.DeviceSetPower, (ushort) (isOn ? 65535 : 0)).ConfigureAwait(false);
 		}
 
 		/// <summary>

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace LifxNet {
 	public partial class LifxClient {
-		private readonly Dictionary<UInt32, Action<LifxResponse>> _taskCompletions =
+		private readonly Dictionary<uint, Action<LifxResponse>> _taskCompletions =
 			new Dictionary<uint, Action<LifxResponse>>();
 
 		/// <summary>
@@ -51,7 +51,7 @@ namespace LifxNet {
 		public async Task SetLightPowerAsync(LightBulb bulb, TimeSpan transitionDuration, bool isOn) {
 			if (bulb == null)
 				throw new ArgumentNullException(nameof(bulb));
-			if (transitionDuration.TotalMilliseconds > UInt32.MaxValue ||
+			if (transitionDuration.TotalMilliseconds > uint.MaxValue ||
 			    transitionDuration.Ticks < 0)
 				throw new ArgumentOutOfRangeException(nameof(transitionDuration));
 
@@ -60,13 +60,13 @@ namespace LifxNet {
 				AcknowledgeRequired = true
 			};
 
-			var b = BitConverter.GetBytes((UInt16) transitionDuration.TotalMilliseconds);
+			var b = BitConverter.GetBytes((ushort) transitionDuration.TotalMilliseconds);
 
 			Debug.WriteLine(
 				$"Sending LightSetPower(on={isOn},duration={transitionDuration.TotalMilliseconds}ms) to {bulb.HostName}");
 
 			await BroadcastMessageAsync<AcknowledgementResponse>(bulb.HostName, header, MessageType.LightSetPower,
-				(UInt16) (isOn ? 65535 : 0), b
+				(ushort) (isOn ? 65535 : 0), b
 			).ConfigureAwait(false);
 		}
 
@@ -94,7 +94,7 @@ namespace LifxNet {
 		/// <param name="lifxColor"></param>
 		/// <param name="kelvin"></param>
 		/// <returns></returns>
-		public Task SetColorAsync(LightBulb bulb, LifxColor lifxColor, UInt16 kelvin) =>
+		public Task SetColorAsync(LightBulb bulb, LifxColor lifxColor, ushort kelvin) =>
 			SetColorAsync(bulb, lifxColor, kelvin, TimeSpan.Zero);
 
 		/// <summary>
@@ -105,7 +105,7 @@ namespace LifxNet {
 		/// <param name="kelvin"></param>
 		/// <param name="transitionDuration"></param>
 		/// <returns></returns>
-		public Task SetColorAsync(LightBulb bulb, LifxColor lifxColor, UInt16 kelvin, TimeSpan transitionDuration) {
+		public Task SetColorAsync(LightBulb bulb, LifxColor lifxColor, ushort kelvin, TimeSpan transitionDuration) {
 			if (bulb == null)
 				throw new ArgumentNullException(nameof(bulb));
 			var hsl = Utilities.RgbToHsl(lifxColor);
@@ -123,14 +123,14 @@ namespace LifxNet {
 		/// <param name="transitionDuration"></param>
 		/// <returns></returns>
 		public async Task SetColorAsync(LightBulb bulb,
-			UInt16 hue,
-			UInt16 saturation,
-			UInt16 brightness,
-			UInt16 kelvin,
+			ushort hue,
+			ushort saturation,
+			ushort brightness,
+			ushort kelvin,
 			TimeSpan transitionDuration) {
 			if (bulb == null)
 				throw new ArgumentNullException(nameof(bulb));
-			if (transitionDuration.TotalMilliseconds > UInt32.MaxValue ||
+			if (transitionDuration.TotalMilliseconds > uint.MaxValue ||
 			    transitionDuration.Ticks < 0)
 				throw new ArgumentOutOfRangeException("transitionDuration");
 			if (kelvin < 2500 || kelvin > 9000) {
@@ -142,7 +142,7 @@ namespace LifxNet {
 				Identifier = GetNextIdentifier(),
 				AcknowledgeRequired = true
 			};
-			var duration = (UInt32) transitionDuration.TotalMilliseconds;
+			var duration = (uint) transitionDuration.TotalMilliseconds;
 
 			await BroadcastMessageAsync<AcknowledgementResponse>(bulb.HostName, header,
 				MessageType.LightSetColor, (byte) 0x00, //reserved
@@ -196,7 +196,7 @@ namespace LifxNet {
 		/// </summary>
 		/// <param name="bulb"></param>
 		/// <returns></returns>
-		public async Task<UInt16> GetInfraredAsync(LightBulb bulb) {
+		public async Task<ushort> GetInfraredAsync(LightBulb bulb) {
 			if (bulb == null)
 				throw new ArgumentNullException(nameof(bulb));
 
@@ -214,7 +214,7 @@ namespace LifxNet {
 		/// <param name="device"></param>
 		/// <param name="brightness"></param>
 		/// <returns></returns>
-		public async Task SetInfraredAsync(Device device, UInt16 brightness) {
+		public async Task SetInfraredAsync(Device device, ushort brightness) {
 			if (device == null)
 				throw new ArgumentNullException(nameof(device));
 			Debug.WriteLine($"Sending SetInfrared({brightness}) to {device.HostName}");

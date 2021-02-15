@@ -29,10 +29,11 @@ namespace SampleApp.Universal
 		protected async override void OnNavigatedTo(NavigationEventArgs e)
 		{
 			base.OnNavigatedTo(e);
-			client = await LifxClient.CreateAsync();
+			client = new LifxClient();
 			client.Discovered += Client_DeviceDiscovered;
 			client.Lost += Client_DeviceLost;
 			client.StartDeviceDiscovery();
+			await Task.FromResult(true);
 		}
 		protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
 		{

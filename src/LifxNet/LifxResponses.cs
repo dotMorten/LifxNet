@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
 using System.Text;
 
 namespace LifxNet {
@@ -7,7 +9,7 @@ namespace LifxNet {
 	/// Base class for LIFX response types
 	/// </summary>
 	public abstract class LifxResponse {
-		internal static LifxResponse Create(FrameHeader header, MessageType type, UInt32 source, byte[] payload) {
+		internal static LifxResponse Create(FrameHeader header, MessageType type, uint source, Payload payload) {
 			switch (type) {
 				case MessageType.DeviceAcknowledgement:
 					return new AcknowledgementResponse(header, type, payload, source);
@@ -31,12 +33,16 @@ namespace LifxNet {
 					return new StateZoneResponse(header, type, payload, source);
 				case MessageType.StateMultiZone:
 					return new StateMultiZoneResponse(header, type, payload, source);
+				case MessageType.StateDeviceChain:
+					return new StateDeviceChainResponse(header, type, payload, source);
+				case MessageType.StateTileState64:
+					return new StateTileState64Response(header, type, payload, source);
 				default:
 					return new UnknownResponse(header, type, payload, source);
 			}
 		}
 
-		internal LifxResponse(FrameHeader header, MessageType type, byte[] payload, UInt32 source) {
+		internal LifxResponse(FrameHeader header, MessageType type, Payload payload, uint source) {
 			Header = header;
 			Type = type;
 			Payload = payload;
@@ -44,16 +50,16 @@ namespace LifxNet {
 		}
 
 		internal FrameHeader Header { get; }
-		internal byte[] Payload { get; }
+		internal Payload Payload { get; }
 		internal MessageType Type { get; }
-		internal UInt32 Source { get; }
+		internal uint Source { get; }
 	}
 
 	/// <summary>
 	/// Response to any message sent with ack_required set to 1. 
 	/// </summary>
 	internal class AcknowledgementResponse : LifxResponse {
-		internal AcknowledgementResponse(FrameHeader header, MessageType type, byte[] payload, UInt32 source) : base(
+		internal AcknowledgementResponse(FrameHeader header, MessageType type, Payload payload, uint source) : base(
 			header, type, payload, source) {
 		}
 	}
@@ -62,67 +68,98 @@ namespace LifxNet {
 	/// The StateZone message represents the state of a single zone with the index field indicating which zone is represented. The count field contains the count of the total number of zones available on the device.
 	/// </summary>
 	public class StateZoneResponse : LifxResponse {
-		internal StateZoneResponse(FrameHeader header, MessageType type, byte[] payload, UInt32 source) : base(header,
+		internal StateZoneResponse(FrameHeader header, MessageType type, Payload payload, uint source) : base(header,
 			type, payload, source) {
-			Count = BitConverter.ToUInt16(payload, 0);
-			Index = BitConverter.ToUInt16(payload, 2);
-			var h = BitConverter.ToInt16(payload, 4);
-			var s = BitConverter.ToInt16(payload, 6);
-			var b = BitConverter.ToInt16(payload, 8);
-			var k = BitConverter.ToInt16(payload, 10);
+			Count = payload.GetUInt16();
+			Index = payload.GetUInt16();
+			var h = payload.GetInt16();
+			var s = payload.GetInt16();
+			var b = payload.GetInt16();
+			var k = payload.GetInt16();
 			Color = new LifxColor(h, s, b, k);
+			payload.Reset();
 		}
 
 		/// <summary>
 		/// Count - total number of zones on the device
 		/// </summary>
-		public UInt16 Count { get; private set; }
+		public ushort Count { get; }
 
 		/// <summary>
 		/// Index - Zone the message starts from
 		/// </summary>
-		public UInt16 Index { get; private set; }
+		public ushort Index { get; }
 
 		/// <summary>
 		/// The list of colors returned by the message
 		/// </summary>
-		public LifxColor Color { get; private set; }
+		public LifxColor Color { get; }
 	}
 
+	
+	/// <summary>
+	/// The StateZone message represents the state of a single zone with the index field indicating which zone is represented. The count field contains the count of the total number of zones available on the device.
+	/// </summary>
+	public class StateDeviceChainResponse : LifxResponse {
+		internal StateDeviceChainResponse(FrameHeader header, MessageType type, Payload payload, uint source) : base(header,
+			type, payload, source) {
+			Tiles = new List<Tile>();
+			StartIndex = payload.GetUint8();
+			while (payload.HasContent()) {
+				var tile = new Tile();
+				tile.LoadPayload(payload);
+				Tiles.Add(tile);
+			}
+			TotalCount = payload.GetUint8();
+			if (TotalCount != Tiles.Count) Debug.WriteLine($"Warning, tile count doesn't match: {TotalCount} : {Tiles.Count}");
+			payload.Reset();
+		}
+
+		/// <summary>
+		/// Count - total number of zones on the device
+		/// </summary>
+		public byte TotalCount { get; }
+
+		/// <summary>
+		/// Start Index - Zone the message starts from
+		/// </summary>
+		public byte StartIndex { get; }
+
+		/// <summary>
+		/// The list of colors returned by the message
+		/// </summary>
+		public List<Tile> Tiles { get; }
+	}
 
 	/// <summary>
 	/// Get the list of colors currently being displayed by zones
 	/// </summary>
 	public class StateMultiZoneResponse : LifxResponse {
-		internal StateMultiZoneResponse(FrameHeader header, MessageType type, byte[] payload, UInt32 source) : base(
+		internal StateMultiZoneResponse(FrameHeader header, MessageType type, Payload payload, uint source) : base(
 			header, type, payload, source) {
 			Colors = new List<LifxColor>();
-			Count = BitConverter.ToUInt16(payload, 0);
-			Index = BitConverter.ToUInt16(payload, 2);
-			for (var i = 4; i < payload.Length; i += 4) {
-				if (i + 3 < payload.Length) continue;
-				var h = BitConverter.ToInt16(payload, i);
-				var s = BitConverter.ToInt16(payload, i + 1);
-				var b = BitConverter.ToInt16(payload, i + 2);
-				var k = BitConverter.ToInt16(payload, i + 3);
-				Colors.Add(new LifxColor(h, s, b, k));
+			Count = payload.GetUInt16();
+			Index = payload.GetUInt16();
+			while (payload.HasContent()) {
+				Colors.Add(payload.GetColor());
 			}
+			payload.Reset();
 		}
 
 		/// <summary>
 		/// Count - total number of zones on the device
 		/// </summary>
-		public UInt16 Count { get; private set; }
+		public ushort Count { get; }
 
 		/// <summary>
 		/// Index - Zone the message starts from
 		/// </summary>
-		public UInt16 Index { get; private set; }
+		public ushort Index { get; }
 
 		/// <summary>
 		/// The list of colors returned by the message
 		/// </summary>
-		public List<LifxColor> Colors { get; private set; }
+		public List<LifxColor> Colors { get; }
 	}
 
 
@@ -130,30 +167,26 @@ namespace LifxNet {
 	/// Get the list of colors currently being displayed by zones
 	/// </summary>
 	public class StateExtendedColorZonesResponse : LifxResponse {
-		internal StateExtendedColorZonesResponse(FrameHeader header, MessageType type, byte[] payload, UInt32 source) :
+		internal StateExtendedColorZonesResponse(FrameHeader header, MessageType type, Payload payload, uint source) :
 			base(header, type, payload, source) {
 			Colors = new List<LifxColor>();
-			Count = BitConverter.ToUInt16(payload, 0);
-			Index = BitConverter.ToUInt16(payload, 2);
-			for (var i = 4; i < payload.Length; i += 4) {
-				if (i + 3 < payload.Length) continue;
-				var h = BitConverter.ToInt16(payload, i);
-				var s = BitConverter.ToInt16(payload, i + 1);
-				var b = BitConverter.ToInt16(payload, i + 2);
-				var k = BitConverter.ToInt16(payload, i + 3);
-				Colors.Add(new LifxColor(h, s, b, k));
+			Count = payload.GetUInt16();
+			Index = payload.GetUInt16();
+			while (payload.HasContent()) {
+				Colors.Add(payload.GetColor());
 			}
+			payload.Reset();
 		}
 
 		/// <summary>
 		/// Count - total number of zones on the device
 		/// </summary>
-		public UInt16 Count { get; private set; }
+		public ushort Count { get; private set; }
 
 		/// <summary>
 		/// Index - Zone the message starts from
 		/// </summary>
-		public UInt16 Index { get; private set; }
+		public ushort Index { get; private set; }
 
 		/// <summary>
 		/// The list of colors returned by the message
@@ -167,143 +200,178 @@ namespace LifxNet {
 	/// If the Service is temporarily unavailable, then the port value will be 0.
 	/// </summary>
 	internal class StateServiceResponse : LifxResponse {
-		internal StateServiceResponse(FrameHeader header, MessageType type, byte[] payload, UInt32 source) : base(
+		internal StateServiceResponse(FrameHeader header, MessageType type, Payload payload, uint source) : base(
 			header, type, payload, source) {
-			Service = payload[0];
-			Port = BitConverter.ToUInt32(payload, 1);
+			Service = payload.GetUint8();
+			Port = payload.GetUInt32();
+			payload.Reset();
 		}
 
-		private Byte Service { get; }
-		private UInt32 Port { get; }
+		private byte Service { get; }
+		private uint Port { get; }
+	}
+	
+	/// <summary>
+	/// Response to any message sent with ack_required set to 1. 
+	/// </summary>
+	internal class StateTileState64Response : LifxResponse {
+		internal StateTileState64Response(FrameHeader header, MessageType type, Payload payload, uint source) : base(
+			header, type, payload, source) {
+			TileIndex = payload.GetUint8();
+			// Skip one byte for reserved
+			payload.Advance();
+			X = payload.GetUint8();
+			Y = payload.GetUint8();
+			Width = payload.GetUint8();
+			Colors = new LifxColor[64];
+			for (var i = 0; i < Colors.Length; i++) {
+				if (payload.HasContent()) {
+					Colors[i] = payload.GetColor();
+				} else {
+					Debug.WriteLine($"Content size mismatch fetching colors: {i}/64: ");
+				}
+			}
+		}
+		public uint TileIndex { get; }
+		public uint X { get; }
+		public uint Y { get; }
+		public uint Width { get; }
+		public LifxColor[] Colors { get; }
 	}
 
 	/// <summary>
 	/// Response to GetLabel message. Provides device label.
 	/// </summary>
 	internal class StateLabelResponse : LifxResponse {
-		internal StateLabelResponse(FrameHeader header, MessageType type, byte[] payload, UInt32 source) : base(header,
+		internal StateLabelResponse(FrameHeader header, MessageType type, Payload payload, uint source) : base(header,
 			type, payload, source) {
-			Label = Encoding.UTF8.GetString(payload, 0, payload.Length).Replace("\0", "");
+			Label = payload.GetString().Replace("\0", "");
+			payload.Reset();
 		}
 
-		public string? Label { get; private set; }
+		public string? Label { get; }
 	}
 
 	/// <summary>
 	/// Sent by a device to provide the current light state
 	/// </summary>
 	public class LightStateResponse : LifxResponse {
-		internal LightStateResponse(FrameHeader header, MessageType type, byte[] payload, UInt32 source) : base(header,
+		internal LightStateResponse(FrameHeader header, MessageType type, Payload payload, uint source) : base(header,
 			type, payload, source) {
-			Hue = BitConverter.ToUInt16(payload, 0);
-			Saturation = BitConverter.ToUInt16(payload, 2);
-			Brightness = BitConverter.ToUInt16(payload, 4);
-			Kelvin = BitConverter.ToUInt16(payload, 6);
-			IsOn = BitConverter.ToUInt16(payload, 10) > 0;
-			Label = Encoding.UTF8.GetString(payload, 12, 32).Replace("\0", "");
+			Hue = payload.GetUInt16();
+			Saturation = payload.GetUInt16();
+			Brightness = payload.GetUInt16();
+			Kelvin = payload.GetUInt16();
+			IsOn = payload.GetUInt16() > 0;
+			Label = payload.GetString(32).Replace("\\0", "");
+			payload.Reset();
 		}
 
 		/// <summary>
 		/// Hue
 		/// </summary>
-		public UInt16 Hue { get; private set; }
+		public ushort Hue { get; }
 
 		/// <summary>
 		/// Saturation (0=desaturated, 65535 = fully saturated)
 		/// </summary>
-		public UInt16 Saturation { get; private set; }
+		public ushort Saturation { get; }
 
 		/// <summary>
 		/// Brightness (0=off, 65535=full brightness)
 		/// </summary>
-		public UInt16 Brightness { get; private set; }
+		public ushort Brightness { get; }
 
 		/// <summary>
 		/// Bulb color temperature
 		/// </summary>
-		public UInt16 Kelvin { get; private set; }
+		public ushort Kelvin { get; }
 
 		/// <summary>
 		/// Power state
 		/// </summary>
-		public bool IsOn { get; private set; }
+		public bool IsOn { get; }
 
 		/// <summary>
 		/// Light label
 		/// </summary>
-		public string Label { get; private set; }
+		public string Label { get; }
 	}
 
 	internal class LightPowerResponse : LifxResponse {
-		internal LightPowerResponse(FrameHeader header, MessageType type, byte[] payload, UInt32 source) : base(header,
+		internal LightPowerResponse(FrameHeader header, MessageType type, Payload payload, uint source) : base(header,
 			type, payload, source) {
-			IsOn = BitConverter.ToUInt16(payload, 0) > 0;
+			IsOn = payload.GetUInt16() > 0;
+			payload.Reset();
 		}
 
-		public bool IsOn { get; private set; }
+		public bool IsOn { get; }
 	}
 
 	internal class InfraredStateResponse : LifxResponse {
-		internal InfraredStateResponse(FrameHeader header, MessageType type, byte[] payload, UInt32 source) : base(
+		internal InfraredStateResponse(FrameHeader header, MessageType type, Payload payload, uint source) : base(
 			header, type, payload, source) {
-			Brightness = BitConverter.ToUInt16(payload, 0);
+			Brightness = payload.GetUInt16();
+			payload.Reset();
 		}
 
-		public UInt16 Brightness { get; private set; }
+		public ushort Brightness { get; }
 	}
 
 	/// <summary>
 	/// Response to GetVersion message.	Provides the hardware version of the device.
 	/// </summary>
 	public class StateVersionResponse : LifxResponse {
-		internal StateVersionResponse(FrameHeader header, MessageType type, byte[] payload, UInt32 source) : base(
+		internal StateVersionResponse(FrameHeader header, MessageType type, Payload payload, uint source) : base(
 			header, type, payload, source) {
-			Vendor = BitConverter.ToUInt32(payload, 0);
-			Product = BitConverter.ToUInt32(payload, 4);
-			Version = BitConverter.ToUInt32(payload, 8);
+			Vendor = Payload.GetUInt32();
+			Product = Payload.GetUInt32();
+			Version = Payload.GetUInt32();
+			payload.Reset();
 		}
 
 		/// <summary>
 		/// Vendor ID
 		/// </summary>
-		public UInt32 Vendor { get; private set; }
+		public uint Vendor { get; }
 
 		/// <summary>
 		/// Product ID
 		/// </summary>
-		public UInt32 Product { get; private set; }
+		public uint Product { get; }
 
 		/// <summary>
 		/// Hardware version
 		/// </summary>
-		public UInt32 Version { get; private set; }
+		public uint Version { get; }
 	}
 
 	/// <summary>
 	/// Response to GetHostFirmware message. Provides host firmware information.
 	/// </summary>
 	public class StateHostFirmwareResponse : LifxResponse {
-		internal StateHostFirmwareResponse(FrameHeader header, MessageType type, byte[] payload, UInt32 source) : base(
+		internal StateHostFirmwareResponse(FrameHeader header, MessageType type, Payload payload, uint source) : base(
 			header, type, payload, source) {
-			var nanoseconds = BitConverter.ToUInt64(payload, 0);
+			var nanoseconds = payload.GetUInt64();
 			Build = Utilities.Epoch.AddMilliseconds(nanoseconds * 0.000001);
 			//8..15 UInt64 is reserved
-			Version = BitConverter.ToUInt32(payload, 16);
+			Version = payload.GetUInt32();
+			payload.Reset();
 		}
 
 		/// <summary>
 		/// Firmware build time
 		/// </summary>
-		public DateTime Build { get; private set; }
+		public DateTime Build { get; }
 
 		/// <summary>
 		/// Firmware version
 		/// </summary>
-		public UInt32 Version { get; private set; }
+		public uint Version { get; }
 	}
 
 	internal class UnknownResponse : LifxResponse {
-		internal UnknownResponse(FrameHeader header, MessageType type, byte[] payload, UInt32 source) : base(header,
+		internal UnknownResponse(FrameHeader header, MessageType type, Payload payload, uint source) : base(header,
 			type, payload, source) {
 		}
 	}

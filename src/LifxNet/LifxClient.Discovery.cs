@@ -13,6 +13,9 @@ namespace LifxNet {
 		private uint _discoverSourceId;
 		private CancellationTokenSource? _discoverCancellationSource;
 		private readonly Dictionary<string, Device> _discoveredBulbs = new Dictionary<string, Device>();
+		private readonly int[] _stripIds = {31,32,38};
+		private readonly int[] _tileIds = {55};
+		private readonly int[] _switchIds = {70};
 
 		private static uint GetNextIdentifier() {
 			lock (IdentifierLock)
@@ -65,12 +68,33 @@ namespace LifxNet {
 			    _discoverCancellationSource.IsCancellationRequested) //did we cancel discovery?
 				return;
 
-			var device = new LightBulb(remoteAddress.ToString(), msg.Header.TargetMacAddress, msg.Payload[0]
-				, BitConverter.ToUInt32(msg.Payload, 1)) {
-				LastSeen = DateTime.UtcNow
+			var address = remoteAddress.ToString();
+			var mac = msg.Header.TargetMacAddress;
+			var svc = msg.Payload.GetUint8();
+			var port = msg.Payload.GetUInt32();
+			var lastSeen = DateTime.UtcNow;
+			var device = new LightBulb(address, mac, svc, port) {
+				LastSeen = lastSeen
 			};
-			_discoveredBulbs[id] = device;
-			devices.Add(device);
+			var ver = GetDeviceVersionAsync(device).Result;
+			
+			if (_stripIds.Contains((int) ver.Product)) {
+				var dev = new Strip(address, mac, svc, port, ver.Product){LastSeen = lastSeen};
+				_discoveredBulbs[id] = dev;
+				devices.Add(dev);
+			} else if (_switchIds.Contains((int) ver.Product)) {
+				var dev = new Switch(address, mac, svc, port, ver.Product){LastSeen = lastSeen};
+				_discoveredBulbs[id] = dev;
+				devices.Add(dev);
+			} else if (_tileIds.Contains((int) ver.Product)) {
+				var dev = new TileGroup(address, mac, svc, port, ver.Product){LastSeen = lastSeen};
+				_discoveredBulbs[id] = dev;
+				devices.Add(dev);
+			} else {
+				_discoveredBulbs[id] = device;
+				devices.Add(device);
+			}
+
 			Discovered?.Invoke(this, new DiscoveryEventArgs(device));
 		}
 
@@ -123,68 +147,6 @@ namespace LifxNet {
 				return;
 			_discoverCancellationSource.Cancel();
 			_discoverCancellationSource = null;
-		}
-	}
-
-	/// <summary>
-	/// LIFX Generic Device
-	/// </summary>
-	public abstract class Device {
-		internal Device(string hostname, byte[] macAddress, byte service, UInt32 port) {
-			if (hostname == null)
-				throw new ArgumentNullException(nameof(hostname));
-			if (string.IsNullOrWhiteSpace(hostname))
-				throw new ArgumentException(nameof(hostname));
-			HostName = hostname;
-			MacAddress = macAddress;
-			Service = service;
-			Port = port;
-			LastSeen = DateTime.MinValue;
-		}
-
-		/// <summary>
-		/// Hostname for the device
-		/// </summary>
-		public string HostName { get; internal set; }
-
-		/// <summary>
-		/// Service ID
-		/// </summary>
-		public byte Service { get; }
-
-		/// <summary>
-		/// Service port
-		/// </summary>
-		public UInt32 Port { get; }
-
-		internal DateTime LastSeen { get; set; }
-
-		/// <summary>
-		/// Gets the MAC address
-		/// </summary>
-		public byte[] MacAddress { get; }
-
-		/// <summary>
-		/// Gets the MAC address
-		/// </summary>
-		public string MacAddressName {
-			get { return string.Join(":", MacAddress.Take(6).Select(tb => tb.ToString("X2")).ToArray()); }
-		}
-	}
-
-	/// <summary>
-	/// LIFX light bulb
-	/// </summary>
-	public sealed class LightBulb : Device {
-		/// <summary>
-		/// Initializes a new instance of a bulb instead of relying on discovery. At least the host name must be provide for the device to be usable.
-		/// </summary>
-		/// <param name="hostname">Required</param>
-		/// <param name="macAddress"></param>
-		/// <param name="service"></param>
-		/// <param name="port"></param>
-		public LightBulb(string hostname, byte[] macAddress, byte service = 0, UInt32 port = 0) : base(hostname,
-			macAddress, service, port) {
 		}
 	}
 }
