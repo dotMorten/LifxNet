@@ -90,12 +90,12 @@ namespace LifxNet {
 		/// <param name="endIndex">End index of requested zones</param>
 		/// <returns>Either a "StateZone" response for single-zone devices, or "StateMultiZone" response.</returns>
 		/// <exception cref="ArgumentNullException"></exception>
-		public Task<LifxResponse> GetColorZonesAsync(LightBulb bulb, int startIndex, int endIndex) {
+		public Task<StateZoneResponse> GetColorZonesAsync(LightBulb bulb, int startIndex, int endIndex) {
 			if (bulb == null)
 				throw new ArgumentNullException(nameof(bulb));
 			if (startIndex > endIndex) throw new ArgumentOutOfRangeException(nameof(startIndex));
 			FrameHeader header = new FrameHeader(GetNextIdentifier());
-			return BroadcastMessageAsync<LifxResponse>(
+			return BroadcastMessageAsync<StateZoneResponse>(
 				bulb.HostName, header, MessageType.GetColorZones, (byte) startIndex, (byte) endIndex);
 		}
 	}
