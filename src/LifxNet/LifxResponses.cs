@@ -40,6 +40,22 @@ namespace LifxNet {
 					return new StateTileState64Response(header, type, payload, source);
 				case MessageType.StateRelayPower:
 					return new StateRelayPowerResponse(header, type, payload, source);
+				case MessageType.DeviceStateHostInfo:
+					return new StateHostInfoResponse(header, type, payload, source);
+				case MessageType.DeviceStateWifiInfo:
+					return new StateWifiInfoResponse(header, type, payload, source);
+				case MessageType.DeviceStateWifiFirmware:
+					return new StateWifiFirmwareResponse(header, type, payload, source);
+				case MessageType.DeviceStatePower:
+					return new StatePowerResponse(header, type, payload, source);
+				case MessageType.DeviceStateInfo:
+					return new StateInfoResponse(header, type, payload, source);
+				case MessageType.DeviceStateLocation:
+					return new StateLocationResponse(header, type, payload, source);
+				case MessageType.DeviceStateGroup:
+					return new StateGroupResponse(header, type, payload, source);
+				case MessageType.DeviceEchoResponse:
+					return new EchoResponse(header, type, payload, source);
 				default:
 					return new UnknownResponse(header, type, payload, source);
 			}
@@ -98,7 +114,200 @@ namespace LifxNet {
 		/// </summary>
 		public LifxColor Color { get; }
 	}
+	
+	
+	/// <summary>
+	/// Response to GetHostInfo message.
+	/// Provides host MCU information.
+	/// </summary>
+	public class StateHostInfoResponse : LifxResponse {
+		internal StateHostInfoResponse(FrameHeader header, MessageType type, Payload payload, uint source) : base(header,
+			type, payload, source) {
+			Signal = payload.GetFloat32();
+			Tx = payload.GetUInt32();
+			Rx = payload.GetUInt32();
+			payload.Reset();
+		}
 
+		/// <summary>
+		/// Bytes received since power on
+		/// </summary>
+		public uint Rx { get; set; }
+
+		/// <summary>
+		/// Bytes transmitted since power on
+		/// </summary>
+		public uint Tx { get; set; }
+
+		/// <summary>
+		/// Radio receive signal strength in milliWatts
+		/// </summary>
+		public float Signal { get; set; }
+	}
+
+
+	/// <summary>
+	/// Response to GetWifiInfo message.
+	/// Provides host Wifi information.
+	/// </summary>
+	public class StateWifiInfoResponse : LifxResponse {
+		internal StateWifiInfoResponse(FrameHeader header, MessageType type, Payload payload, uint source) : base(header,
+			type, payload, source) {
+			Signal = payload.GetFloat32();
+			Tx = payload.GetUInt32();
+			Rx = payload.GetUInt32();
+			payload.Reset();
+		}
+
+		/// <summary>
+		/// Bytes received since power on
+		/// </summary>
+		public uint Rx { get; set; }
+
+		/// <summary>
+		/// Bytes transmitted since power on
+		/// </summary>
+		public uint Tx { get; set; }
+
+		/// <summary>
+		/// Radio receive signal strength in milliWatts
+		/// </summary>
+		public float Signal { get; set; }
+	}
+	
+	/// <summary>
+	/// Response to GetWifiFirmware message.
+	/// Provides Wifi subsystem information.
+	/// </summary>
+	public class StateWifiFirmwareResponse : LifxResponse {
+		internal StateWifiFirmwareResponse(FrameHeader header, MessageType type, Payload payload, uint source) : base(header,
+			type, payload, source) {
+			Build = payload.GetUInt64();
+			// Skip 64-bit reserved
+			payload.Advance(8);
+			VersionMinor = payload.GetUInt16();
+			VersionMajor = payload.GetUInt16();
+			payload.Reset();
+		}
+		
+		/// <summary>
+		/// Firmware build time (epoch time)
+		/// </summary>
+		public ulong Build { get; set; }
+		/// <summary>
+		/// Minor firmware version number
+		/// </summary>
+		public ushort VersionMinor { get; set; }
+		/// <summary>
+		/// Major firmware version number
+		/// </summary>
+		public ushort VersionMajor { get; set; }
+
+
+	}
+	
+	
+	/// <summary>
+	/// Provides device power level.
+	/// </summary>
+	public class StatePowerResponse : LifxResponse {
+		internal StatePowerResponse(FrameHeader header, MessageType type, Payload payload, uint source) : base(header,
+			type, payload, source) {
+			Level = payload.GetUInt16();
+			payload.Reset();
+		}
+		
+		/// <summary>
+		/// Zero implies standby and non-zero sets a corresponding power draw level. Currently only 0 and 65535 are supported.
+		/// </summary>
+		public ulong Level { get; set; }
+		
+	}
+	
+	
+	/// <summary>
+	/// Provides run-time information of device.
+	/// </summary>
+	public class StateInfoResponse : LifxResponse {
+		internal StateInfoResponse(FrameHeader header, MessageType type, Payload payload, uint source) : base(header,
+			type, payload, source) {
+			Time = DateTimeOffset.FromUnixTimeSeconds(payload.GetInt64()).DateTime;
+			Uptime = payload.GetInt64();
+			Downtime = payload.GetInt64();
+			payload.Reset();
+		}
+
+		/// <summary>
+		/// Current time
+		/// </summary>
+		public DateTime Time { get; set; }
+
+		/// <summary>
+		/// Time since last power on (relative time in nanoseconds)
+		/// </summary>
+		public long Uptime { get; set; }
+
+		/// <summary>
+		/// Last power off period, 5 second accuracy (in nanoseconds)
+		/// </summary>
+		public long Downtime { get; set; }
+	}
+	
+	
+	/// <summary>
+	/// Device location.
+	/// </summary>
+	public class StateLocationResponse : LifxResponse {
+		internal StateLocationResponse(FrameHeader header, MessageType type, Payload payload, uint source) : base(header,
+			type, payload, source) {
+			Location = payload.GetBytes(16);
+			Label = payload.GetString(32);
+			Updated = payload.GetUInt64();
+			payload.Reset();
+		}
+
+		public byte[] Location { get; set; }
+
+		public string Label { get; set; }
+
+		public ulong Updated { get; set; }
+	}
+	
+	/// <summary>
+	/// Device group.
+	/// </summary>
+	public class StateGroupResponse : LifxResponse {
+		internal StateGroupResponse(FrameHeader header, MessageType type, Payload payload, uint source) : base(header,
+			type, payload, source) {
+			Group = payload.GetBytes(16);
+			Label = payload.GetString(32);
+			Updated = payload.GetUInt64();
+			payload.Reset();
+		}
+
+		public byte[] Group { get; set; }
+
+		public string Label { get; set; }
+
+		public ulong Updated { get; set; }
+	}
+	
+	/// <summary>
+	/// Echo response with payload sent in the EchoRequest.
+	/// </summary>
+	public class EchoResponse : LifxResponse {
+		internal EchoResponse(FrameHeader header, MessageType type, Payload payload, uint source) : base(header,
+			type, payload, source) {
+			RequestPayload = payload.ToArray();
+			payload.Reset();
+		}
+
+		/// <summary>
+		/// Payload sent in the EchoRequest.
+		/// </summary>
+		public byte[] RequestPayload { get; set; }
+	}
+	
 
 	/// <summary>
 	/// The StateZone message represents the state of a single zone with the index field indicating which zone is represented. The count field contains the count of the total number of zones available on the device.

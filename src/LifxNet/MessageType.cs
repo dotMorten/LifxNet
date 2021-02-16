@@ -3,9 +3,11 @@
 		//Device Messages
 		DeviceGetService = 0x02,
 		DeviceStateService = 0x03,
+		//Undocumented?
 		DeviceGetTime = 0x04,
 		DeviceSetTime = 0x05,
 		DeviceStateTime = 0x06,
+		// Documented
 		DeviceGetHostInfo = 12,
 		DeviceStateHostInfo = 13,
 		DeviceGetHostFirmware = 14,

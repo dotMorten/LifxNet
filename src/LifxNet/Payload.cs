@@ -187,6 +187,10 @@ namespace LifxNet {
 			return new LifxColor();
 		}
 
+		public byte[] GetBytes(int len) {
+			return _br.ReadBytes(len);
+		}
+
 		/// <summary>
 		/// Read Uint8 from array and increment pointer 1 byte
 		/// </summary>
