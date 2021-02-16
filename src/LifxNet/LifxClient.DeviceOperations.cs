@@ -26,10 +26,7 @@ namespace LifxNet {
 			if (device == null)
 				throw new ArgumentNullException(nameof(device));
 			Debug.WriteLine($"Sending DeviceSetPower({isOn}) to {device.HostName}");
-			FrameHeader header = new FrameHeader {
-				Identifier = GetNextIdentifier(),
-				AcknowledgeRequired = true
-			};
+			FrameHeader header = new FrameHeader(GetNextIdentifier(), true);
 
 			_ = await BroadcastMessageAsync<AcknowledgementResponse>(device.HostName, header,
 				MessageType.DeviceSetPower, (ushort) (isOn ? 65535 : 0)).ConfigureAwait(false);
@@ -44,10 +41,7 @@ namespace LifxNet {
 			if (device == null)
 				throw new ArgumentNullException(nameof(device));
 
-			FrameHeader header = new FrameHeader {
-				Identifier = GetNextIdentifier(),
-				AcknowledgeRequired = false
-			};
+			FrameHeader header = new FrameHeader(GetNextIdentifier());
 			var resp = await BroadcastMessageAsync<StateLabelResponse>(device.HostName, header,
 				MessageType.DeviceGetLabel).ConfigureAwait(false);
 			return resp.Label;
@@ -63,10 +57,7 @@ namespace LifxNet {
 			if (device == null)
 				throw new ArgumentNullException(nameof(device));
 
-			FrameHeader header = new FrameHeader {
-				Identifier = GetNextIdentifier(),
-				AcknowledgeRequired = true
-			};
+			FrameHeader header = new FrameHeader(GetNextIdentifier(), true);
 			_ = await BroadcastMessageAsync<AcknowledgementResponse>(
 				device.HostName, header, MessageType.DeviceSetLabel, label).ConfigureAwait(false);
 		}
@@ -78,10 +69,7 @@ namespace LifxNet {
 			if (device == null)
 				throw new ArgumentNullException(nameof(device));
 
-			FrameHeader header = new FrameHeader {
-				Identifier = GetNextIdentifier(),
-				AcknowledgeRequired = false
-			};
+			FrameHeader header = new FrameHeader(GetNextIdentifier(), true);
 			return BroadcastMessageAsync<StateVersionResponse>(device.HostName, header, MessageType.DeviceGetVersion);
 		}
 
@@ -94,10 +82,7 @@ namespace LifxNet {
 			if (device == null)
 				throw new ArgumentNullException(nameof(device));
 
-			FrameHeader header = new FrameHeader {
-				Identifier = GetNextIdentifier(),
-				AcknowledgeRequired = false
-			};
+			FrameHeader header = new FrameHeader(GetNextIdentifier());
 			return BroadcastMessageAsync<StateHostFirmwareResponse>(device.HostName, header,
 				MessageType.DeviceGetHostFirmware);
 		}

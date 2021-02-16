@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace LifxNet {
@@ -17,28 +15,27 @@ namespace LifxNet {
 		private readonly UdpClient _socket;
 		private bool _isRunning;
 
-
-		/// <summary>
-		/// Create our client directly, and instantiate a new UDP client
-		/// </summary>
-		public LifxClient() {
+		private LifxClient() {
 			IPEndPoint end = new IPEndPoint(IPAddress.Any, Port);
 			_socket = new UdpClient(end) {Client = {Blocking = false}, DontFragment = true};
 			_socket.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+		}
+
+		/// <summary>
+		/// Creates a new LIFX client.
+		/// </summary>
+		/// <returns>client</returns>
+		public static Task<LifxClient> CreateAsync() {
+			LifxClient client = new LifxClient();
+			client.Initialize();
+			return Task.FromResult(client);
+		}
+
+		private void Initialize() {
 			_isRunning = true;
 			StartReceiveLoop();
 		}
-		/// <summary>
-		/// Create our client directly with a re-usable UDP client.
-		/// </summary>
-		/// <param name="client">Optional UDPClient.</param>
-		public LifxClient(UdpClient client) {
-			_socket = client;
-			_isRunning = true;
-			StartReceiveLoop();			
-		}
 
-		
 
 		private void StartReceiveLoop() {
 			Task.Run(async () => {
@@ -57,6 +54,7 @@ namespace LifxNet {
 		private void HandleIncomingMessages(byte[] data, IPEndPoint endpoint) {
 			var remote = endpoint;
 			var msg = ParseMessage(data);
+			if (remote.Port == 56700) Debug.WriteLine("Message Type: " + msg.Type);
 			switch (msg.Type) {
 				case MessageType.DeviceStateService:
 					ProcessDeviceDiscoveryMessage(remote.Address, msg);
@@ -70,8 +68,9 @@ namespace LifxNet {
 					break;
 			}
 
-			Debug.WriteLine("Received from {0}:{1}", remote,
-				string.Join(",", (from a in data select a.ToString("X2")).ToArray()));
+			if (remote.Port == 56700)
+				Debug.WriteLine("Received from {0}:{1}", remote,
+					string.Join(",", (from a in data select a.ToString("X2")).ToArray()));
 		}
 
 		/// <summary>
@@ -79,70 +78,45 @@ namespace LifxNet {
 		/// </summary>
 		public void Dispose() {
 			_isRunning = false;
-			_socket?.Dispose();
+			_socket.Dispose();
 		}
 
-		private Task<T> BroadcastMessageAsync<T>(string? hostName, FrameHeader header, MessageType type,
+		private Task<T> BroadcastMessageAsync<T>(string hostName, FrameHeader header, MessageType type,
 			params object[] args)
 			where T : LifxResponse {
-			List<byte> payload = new List<byte>();
-			foreach (var arg in args) {
-				switch (arg) {
-					case ushort @ushort:
-						payload.AddRange(BitConverter.GetBytes(@ushort));
-						break;
-					case uint u:
-						payload.AddRange(BitConverter.GetBytes(u));
-						break;
-					case byte b:
-						payload.Add(b);
-						break;
-					case byte[] bytes:
-						payload.AddRange(bytes);
-						break;
-					case string s:
-						payload.AddRange(
-							Encoding.UTF8.GetBytes(s.PadRight(32).Take(32).ToArray())); //All strings are 32 bytes
-						break;
-					case LifxColor c:
-						payload.AddRange(c.ToBytes());
-						break;
-					default:
-						throw new NotSupportedException(args.GetType().FullName);
-				}
-			}
+			Debug.WriteLine("Broadcasting " + type + " to " + hostName);
+			var payload = new Payload(args);
 
-			return BroadcastMessagePayloadAsync<T>(hostName, header, type, payload.ToArray());
+			return BroadcastPayloadAsync<T>(hostName, header, type, payload);
 		}
 
-		private async Task<T> BroadcastMessagePayloadAsync<T>(string? hostName, FrameHeader header, MessageType type,
-			byte[] payload)
+		private async Task<T> BroadcastPayloadAsync<T>(string hostName, FrameHeader header, MessageType type,
+			Payload payload)
 			where T : LifxResponse {
 			if (_socket == null)
 				throw new InvalidOperationException("No valid socket");
-#if DEBUG
-			// MemoryStream ms = new MemoryStream();
-			// await WritePacketToStreamAsync(ms.AsOutputStream(), header, (UInt16)type, payload).ConfigureAwait(false);
-			// var data = ms.ToArray();
-			// System.Diagnostics.Debug.WriteLine(
-			// 	string.Join(",", (from a in data select a.ToString("X2")).ToArray()));
-#endif
-			hostName ??= "255.255.255.255";
+
+			MemoryStream ms = new MemoryStream();
+			WritePacketToStream(ms, header, (UInt16) type, payload);
+			var data = ms.ToArray();
+			Debug.WriteLine(
+				string.Join(",", (from a in data select a.ToString("X2")).ToArray()));
+
+
 			TaskCompletionSource<T>? tcs = null;
 			if ( //header.AcknowledgeRequired && 
 				header.Identifier > 0 &&
 				typeof(T) != typeof(UnknownResponse)) {
 				tcs = new TaskCompletionSource<T>();
-
-				void Action(LifxResponse r) {
-					if (r.GetType() == typeof(T)) tcs.TrySetResult((T) r);
-				}
-
-				_taskCompletions[header.Identifier] = Action;
+				Action<LifxResponse> action = (r) => {
+					if (r.GetType() == typeof(T))
+						tcs.TrySetResult((T) r);
+				};
+				_taskCompletions[header.Identifier] = action;
 			}
 
 			using (MemoryStream stream = new MemoryStream()) {
-				WritePacketToStream(stream, header, (ushort) type, payload);
+				WritePacketToStream(stream, header, (UInt16) type, payload);
 				var msg = stream.ToArray();
 				await _socket.SendAsync(msg, msg.Length, hostName, Port);
 			}
@@ -150,19 +124,17 @@ namespace LifxNet {
 			//{
 			//	await WritePacketToStreamAsync(stream, header, (UInt16)type, payload).ConfigureAwait(false);
 			//}
-			T result = default;
-			if (tcs == null) {
-				return result;
-			}
-
-			var _ = Task.Delay(1000).ContinueWith(t => {
-				if (!t.IsCompleted)
-					tcs.TrySetException(new TimeoutException());
-			});
-			try {
-				result = await tcs.Task.ConfigureAwait(false);
-			} finally {
-				_taskCompletions.Remove(header.Identifier);
+			T result = default(T);
+			if (tcs != null) {
+				var _ = Task.Delay(1000).ContinueWith((t) => {
+					if (!t.IsCompleted)
+						tcs.TrySetException(new TimeoutException());
+				});
+				try {
+					result = await tcs.Task.ConfigureAwait(false);
+				} finally {
+					_taskCompletions.Remove(header.Identifier);
+				}
 			}
 
 			return result;
@@ -189,12 +161,12 @@ namespace LifxNet {
 			header.AtTime = Utilities.Epoch.AddMilliseconds(nanoseconds * 0.000001);
 			var type = (MessageType) br.ReadUInt16();
 			ms.Seek(2, SeekOrigin.Current); //skip reserved
-			return LifxResponse.Create(header, type, source, new Payload(size > 36 ? br.ReadBytes(size - 36) : new byte[] { }));
+			return LifxResponse.Create(header, type, source,
+				new Payload(size > 36 ? br.ReadBytes(size - 36) : new byte[] { }));
 		}
 
-		private static void WritePacketToStream(Stream outStream, FrameHeader header, ushort type, byte[] payload) {
+		private static void WritePacketToStream(Stream outStream, FrameHeader header, ushort type, Payload payload) {
 			using var dw = new BinaryWriter(outStream);
-			//BinaryWriter bw = new BinaryWriter(ms);
 
 			#region Frame
 
@@ -253,7 +225,7 @@ namespace LifxNet {
 
 			dw.Write(type); //packet _type
 			dw.Write((ushort) 0); //reserved
-			dw.Write(payload);
+			dw.Write(payload.ToArray());
 			dw.Flush();
 		}
 	}
@@ -262,23 +234,20 @@ namespace LifxNet {
 		public uint Identifier;
 		public byte Sequence;
 		public bool AcknowledgeRequired;
-		public readonly bool ResponseRequired;
-		public byte[] TargetMacAddress;
-		public DateTime AtTime;
+		public bool ResponseRequired;
+		public byte[] TargetMacAddress = {0, 0, 0, 0, 0, 0, 0, 0};
+		public DateTime AtTime = DateTime.MinValue;
 
 		public FrameHeader() {
-			Identifier = 0;
-			Sequence = 0;
-			AcknowledgeRequired = false;
-			ResponseRequired = false;
-			TargetMacAddress = new byte[] {0, 0, 0, 0, 0, 0, 0, 0};
-			AtTime = DateTime.MinValue;
+		}
+
+		public FrameHeader(uint id, bool acknowledgeRequired = false) {
+			Identifier = id;
+			AcknowledgeRequired = acknowledgeRequired;
 		}
 
 		public string TargetMacAddressName {
-			get {
-				return string.Join(":", TargetMacAddress.Take(6).Select(tb => tb.ToString("X2")).ToArray());
-			}
+			get { return string.Join(":", TargetMacAddress.Take(6).Select(tb => tb.ToString("X2")).ToArray()); }
 		}
 	}
 }

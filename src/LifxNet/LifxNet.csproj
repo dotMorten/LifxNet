@@ -19,7 +19,7 @@
     <RepositoryType>git</RepositoryType>
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
-    <PackageVersion>2.2.4</PackageVersion>
+    <PackageVersion>2.2.5</PackageVersion>
     <PackageReleaseNotes>Add initial support for Multizone</PackageReleaseNotes>
   </PropertyGroup>
 

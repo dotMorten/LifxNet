@@ -10,8 +10,10 @@
 		/// <param name="macAddress"></param>
 		/// <param name="service"></param>
 		/// <param name="port"></param>
-		public LightBulb(string hostname, byte[] macAddress, byte service = 0, uint port = 0, int productId = 0) : base(hostname,
-			macAddress, service, port, productId) {
+		/// <param name="productId"></param>
+		public LightBulb(string hostname, byte[] macAddress, byte service = 0, uint port = 0, uint productId = 0) :
+			base(hostname,
+				macAddress, service, port) {
 		}
 	}
 }

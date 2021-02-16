@@ -6,7 +6,7 @@ namespace LifxNet {
 	/// LIFX Generic Device
 	/// </summary>
 	public abstract class Device {
-		internal Device(string hostname, byte[] macAddress, byte service, uint port, uint productId) {
+		internal Device(string hostname, byte[] macAddress, byte service, uint port) {
 			if (hostname == null)
 				throw new ArgumentNullException(nameof(hostname));
 			if (string.IsNullOrWhiteSpace(hostname))
@@ -16,7 +16,6 @@ namespace LifxNet {
 			Service = service;
 			Port = port;
 			LastSeen = DateTime.MinValue;
-			ProductId = productId;
 		}
 
 		/// <summary>
@@ -33,12 +32,7 @@ namespace LifxNet {
 		/// Service port
 		/// </summary>
 		public uint Port { get; }
-		
-		/// <summary>
-		/// Product ID. Not a part of the "real" message, but handy to have regardless
-		/// </summary>
-		public uint ProductId { get; }
-		
+
 		internal DateTime LastSeen { get; set; }
 
 		/// <summary>

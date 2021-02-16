@@ -1,27 +1,6 @@
 ﻿using System;
 
 namespace LifxNet {
-	/// <summary>
-	/// LIFX tile
-	/// </summary>
-	public sealed class TileGroup : Device {
-		/// <summary>
-		/// Initializes a new instance of a bulb instead of relying on discovery. At least the host name must be provide for the device to be usable.
-		/// </summary>
-		/// <param name="hostname">Required</param>
-		/// <param name="macAddress"></param>
-		/// <param name="service"></param>
-		/// <param name="port"></param>
-		/// <param name="productId"></param>
-		public TileGroup(string hostname, byte[] macAddress, byte service = 0, uint port = 0, uint productId = 0) : base(hostname,
-			macAddress, service, port, productId) {
-		}
-
-		public void LoadPayload() {
-			 
-		}
-	}
-
 	public class Tile {
 		public int AccelMeasX { get; set; }
 		public int AccelMeasY { get; set; }
@@ -38,7 +17,6 @@ namespace LifxNet {
 		public short FirmwareVersionMajor { get; set; }
 
 		public Tile() {
-			
 		}
 
 		public void LoadPayload(Payload payload) {

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Threading.Tasks;
 
 namespace LifxNet {
@@ -19,7 +18,7 @@ namespace LifxNet {
 		/// <returns></returns>
 		/// <exception cref="ArgumentNullException"></exception>
 		/// <exception cref="ArgumentOutOfRangeException"></exception>
-		public async Task SetColorZones(LightBulb bulb, int startIndex, int endIndex, LifxColor color,
+		public async Task SetColorZonesAsync(LightBulb bulb, int startIndex, int endIndex, LifxColor color,
 			TimeSpan transitionDuration) {
 			if (bulb == null)
 				throw new ArgumentNullException(nameof(bulb));
@@ -30,10 +29,7 @@ namespace LifxNet {
 
 			if (startIndex > endIndex) throw new ArgumentOutOfRangeException(nameof(startIndex));
 
-			FrameHeader header = new FrameHeader {
-				Identifier = GetNextIdentifier(),
-				AcknowledgeRequired = true
-			};
+			FrameHeader header = new FrameHeader(GetNextIdentifier(), true);
 			var duration = (uint) transitionDuration.TotalMilliseconds;
 			await BroadcastMessageAsync<AcknowledgementResponse>(bulb.HostName, header,
 				MessageType.SetColorZones, (byte) startIndex, (byte) endIndex, color, duration, Apply);
@@ -60,10 +56,7 @@ namespace LifxNet {
 				throw new ArgumentOutOfRangeException(nameof(transitionDuration));
 			}
 
-			FrameHeader header = new FrameHeader {
-				Identifier = GetNextIdentifier(),
-				AcknowledgeRequired = true
-			};
+			FrameHeader header = new FrameHeader(GetNextIdentifier(), true);
 			var duration = (uint) transitionDuration.TotalMilliseconds;
 			var count = (byte) colors.Count;
 			var colorBytes = new List<byte>();
@@ -84,10 +77,7 @@ namespace LifxNet {
 		public Task<StateExtendedColorZonesResponse> GetExtendedColorZonesAsync(LightBulb bulb) {
 			if (bulb == null)
 				throw new ArgumentNullException(nameof(bulb));
-			FrameHeader header = new FrameHeader {
-				Identifier = GetNextIdentifier(),
-				AcknowledgeRequired = false
-			};
+			FrameHeader header = new FrameHeader(GetNextIdentifier());
 			return BroadcastMessageAsync<StateExtendedColorZonesResponse>(
 				bulb.HostName, header, MessageType.GetExtendedColorZones);
 		}
@@ -104,10 +94,7 @@ namespace LifxNet {
 			if (bulb == null)
 				throw new ArgumentNullException(nameof(bulb));
 			if (startIndex > endIndex) throw new ArgumentOutOfRangeException(nameof(startIndex));
-			FrameHeader header = new FrameHeader {
-				Identifier = GetNextIdentifier(),
-				AcknowledgeRequired = false
-			};
+			FrameHeader header = new FrameHeader(GetNextIdentifier());
 			return BroadcastMessageAsync<LifxResponse>(
 				bulb.HostName, header, MessageType.GetColorZones, (byte) startIndex, (byte) endIndex);
 		}

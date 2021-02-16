@@ -10,6 +10,7 @@ namespace LifxNet {
 	/// </summary>
 	public abstract class LifxResponse {
 		internal static LifxResponse Create(FrameHeader header, MessageType type, uint source, Payload payload) {
+			payload.Reset();
 			switch (type) {
 				case MessageType.DeviceAcknowledgement:
 					return new AcknowledgementResponse(header, type, payload, source);
@@ -37,6 +38,8 @@ namespace LifxNet {
 					return new StateDeviceChainResponse(header, type, payload, source);
 				case MessageType.StateTileState64:
 					return new StateTileState64Response(header, type, payload, source);
+				case MessageType.StateRelayPower:
+					return new StateRelayPowerResponse(header, type, payload, source);
 				default:
 					return new UnknownResponse(header, type, payload, source);
 			}
@@ -96,12 +99,13 @@ namespace LifxNet {
 		public LifxColor Color { get; }
 	}
 
-	
+
 	/// <summary>
 	/// The StateZone message represents the state of a single zone with the index field indicating which zone is represented. The count field contains the count of the total number of zones available on the device.
 	/// </summary>
 	public class StateDeviceChainResponse : LifxResponse {
-		internal StateDeviceChainResponse(FrameHeader header, MessageType type, Payload payload, uint source) : base(header,
+		internal StateDeviceChainResponse(FrameHeader header, MessageType type, Payload payload, uint source) : base(
+			header,
 			type, payload, source) {
 			Tiles = new List<Tile>();
 			StartIndex = payload.GetUint8();
@@ -110,8 +114,10 @@ namespace LifxNet {
 				tile.LoadPayload(payload);
 				Tiles.Add(tile);
 			}
+
 			TotalCount = payload.GetUint8();
-			if (TotalCount != Tiles.Count) Debug.WriteLine($"Warning, tile count doesn't match: {TotalCount} : {Tiles.Count}");
+			if (TotalCount != Tiles.Count)
+				Debug.WriteLine($"Warning, tile count doesn't match: {TotalCount} : {Tiles.Count}");
 			payload.Reset();
 		}
 
@@ -143,6 +149,7 @@ namespace LifxNet {
 			while (payload.HasContent()) {
 				Colors.Add(payload.GetColor());
 			}
+
 			payload.Reset();
 		}
 
@@ -175,6 +182,7 @@ namespace LifxNet {
 			while (payload.HasContent()) {
 				Colors.Add(payload.GetColor());
 			}
+
 			payload.Reset();
 		}
 
@@ -210,11 +218,11 @@ namespace LifxNet {
 		private byte Service { get; }
 		private uint Port { get; }
 	}
-	
+
 	/// <summary>
 	/// Response to any message sent with ack_required set to 1. 
 	/// </summary>
-	internal class StateTileState64Response : LifxResponse {
+	public class StateTileState64Response : LifxResponse {
 		internal StateTileState64Response(FrameHeader header, MessageType type, Payload payload, uint source) : base(
 			header, type, payload, source) {
 			TileIndex = payload.GetUint8();
@@ -232,6 +240,7 @@ namespace LifxNet {
 				}
 			}
 		}
+
 		public uint TileIndex { get; }
 		public uint X { get; }
 		public uint Y { get; }
@@ -368,6 +377,28 @@ namespace LifxNet {
 		/// Firmware version
 		/// </summary>
 		public uint Version { get; }
+	}
+
+	/// <summary>
+	/// Response to GetVersion message.	Provides the hardware version of the device.
+	/// </summary>
+	public class StateRelayPowerResponse : LifxResponse {
+		internal StateRelayPowerResponse(FrameHeader header, MessageType type, Payload payload, uint source) : base(
+			header, type, payload, source) {
+			RelayIndex = payload.GetUint8();
+			Level = payload.GetUInt16();
+			payload.Reset();
+		}
+
+		/// <summary>
+		/// The relay on the switch starting from 0
+		/// </summary>
+		public int RelayIndex { get; }
+
+		/// <summary>
+		/// The value of the relay
+		/// </summary>
+		public int Level { get; }
 	}
 
 	internal class UnknownResponse : LifxResponse {
