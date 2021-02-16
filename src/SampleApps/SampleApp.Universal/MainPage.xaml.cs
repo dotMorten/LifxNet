@@ -29,21 +29,21 @@ namespace SampleApp.Universal
 		protected async override void OnNavigatedTo(NavigationEventArgs e)
 		{
 			base.OnNavigatedTo(e);
-			client = new LifxClient();
-			client.Discovered += Client_DeviceDiscovered;
-			client.Lost += Client_DeviceLost;
+			client = await LifxClient.CreateAsync();
+			client.DeviceDiscovered += ClientDeviceDeviceDiscovered;
+			client.DeviceLost += ClientDeviceDeviceLost;
 			client.StartDeviceDiscovery();
 			await Task.FromResult(true);
 		}
 		protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
 		{
-			client.Discovered -= Client_DeviceDiscovered;
-			client.Lost -= Client_DeviceLost;
+			client.DeviceDiscovered -= ClientDeviceDeviceDiscovered;
+			client.DeviceLost -= ClientDeviceDeviceLost;
 			client.StopDeviceDiscovery();
 			client = null;
 			base.OnNavigatingFrom(e);
 		}
-		private void Client_DeviceLost(object sender, LifxClient.DiscoveryEventArgs e)
+		private void ClientDeviceDeviceLost(object sender, LifxClient.DeviceDiscoveryEventArgs e)
 		{
 			var _ = Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
 			{
@@ -53,7 +53,7 @@ namespace SampleApp.Universal
 			});
 		}
 
-		private void Client_DeviceDiscovered(object sender, LifxClient.DiscoveryEventArgs e)
+		private void ClientDeviceDeviceDiscovered(object sender, LifxClient.DeviceDiscoveryEventArgs e)
 		{
 			var _ = Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
 			{
