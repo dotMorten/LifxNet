@@ -10,7 +10,7 @@ namespace LifxNet {
 		/// <summary>
 		/// This message is used for changing the color of either a single or multiple zones.
 		/// </summary>
-		/// <param name="bulb">Target bulb</param>
+		/// <param name="device">Target device</param>
 		/// <param name="startIndex">Start index to target</param>
 		/// <param name="endIndex">End index to target</param>
 		/// <param name="color">LifxColor to use</param>
@@ -18,10 +18,10 @@ namespace LifxNet {
 		/// <returns></returns>
 		/// <exception cref="ArgumentNullException"></exception>
 		/// <exception cref="ArgumentOutOfRangeException"></exception>
-		public async Task SetColorZonesAsync(LightBulb bulb, int startIndex, int endIndex, LifxColor color,
+		public async Task SetColorZonesAsync(Device device, int startIndex, int endIndex, LifxColor color,
 			TimeSpan transitionDuration) {
-			if (bulb == null)
-				throw new ArgumentNullException(nameof(bulb));
+			if (device == null)
+				throw new ArgumentNullException(nameof(device));
 			if (transitionDuration.TotalMilliseconds > uint.MaxValue ||
 			    transitionDuration.Ticks < 0) {
 				throw new ArgumentOutOfRangeException(nameof(transitionDuration));
@@ -31,26 +31,26 @@ namespace LifxNet {
 
 			FrameHeader header = new FrameHeader(GetNextIdentifier(), true);
 			var duration = (uint) transitionDuration.TotalMilliseconds;
-			await BroadcastMessageAsync<AcknowledgementResponse>(bulb.HostName, header,
+			await BroadcastMessageAsync<AcknowledgementResponse>(device.HostName, header,
 				MessageType.SetColorZones, (byte) startIndex, (byte) endIndex, color, duration, Apply);
 		}
 
 		/// <summary>
 		/// Set a zone of colors
 		/// </summary>
-		/// <param name="bulb">The device to set</param>
+		/// <param name="device">The device to set</param>
 		/// <param name="transitionDuration">Duration in ms</param>
 		/// <param name="index">Start index of the zone. Should probably just be 0 for most cases.</param>
 		/// <param name="colors">An array of system.drawing.colors. For completeness, I should probably make an
 		/// overload for this that accepts HSB values, but that's kind of a pain. :P</param>
 		/// <returns></returns>
-		/// <exception cref="ArgumentNullException">Thrown if the bulb is null</exception>
+		/// <exception cref="ArgumentNullException">Thrown if the device is null</exception>
 		/// <exception cref="ArgumentOutOfRangeException">Thrown if the duration is longer than the max</exception>
 		/// 
-		public async Task SetExtendedColorZonesAsync(LightBulb bulb, TimeSpan transitionDuration, uint index,
+		public async Task SetExtendedColorZonesAsync(Device device, TimeSpan transitionDuration, uint index,
 			List<LifxColor> colors) {
-			if (bulb == null)
-				throw new ArgumentNullException(nameof(bulb));
+			if (device == null)
+				throw new ArgumentNullException(nameof(device));
 			if (transitionDuration.TotalMilliseconds > uint.MaxValue ||
 			    transitionDuration.Ticks < 0) {
 				throw new ArgumentOutOfRangeException(nameof(transitionDuration));
@@ -64,39 +64,39 @@ namespace LifxNet {
 				colorBytes.AddRange(color.ToBytes());
 			}
 
-			await BroadcastMessageAsync<AcknowledgementResponse>(bulb.HostName, header,
+			await BroadcastMessageAsync<AcknowledgementResponse>(device.HostName, header,
 				MessageType.SetExtendedColorZones, duration, Apply, index, count, colorBytes);
 		}
 
 		/// <summary>
 		/// Try to get the color zones from our device.
 		/// </summary>
-		/// <param name="bulb"></param>
+		/// <param name="device"></param>
 		/// <returns></returns>
 		/// <exception cref="ArgumentNullException"></exception>
-		public Task<StateExtendedColorZonesResponse> GetExtendedColorZonesAsync(LightBulb bulb) {
-			if (bulb == null)
-				throw new ArgumentNullException(nameof(bulb));
+		public Task<StateExtendedColorZonesResponse> GetExtendedColorZonesAsync(Device device) {
+			if (device == null)
+				throw new ArgumentNullException(nameof(device));
 			FrameHeader header = new FrameHeader(GetNextIdentifier());
 			return BroadcastMessageAsync<StateExtendedColorZonesResponse>(
-				bulb.HostName, header, MessageType.GetExtendedColorZones);
+				device.HostName, header, MessageType.GetExtendedColorZones);
 		}
 
 		/// <summary>
 		/// Try to get the color zones from our device, non-extended.
 		/// </summary>
-		/// <param name="bulb">Target bulb</param>
+		/// <param name="device">Target device</param>
 		/// <param name="startIndex">Start index of requested zones</param>
 		/// <param name="endIndex">End index of requested zones</param>
 		/// <returns>Either a "StateZone" response for single-zone devices, or "StateMultiZone" response.</returns>
 		/// <exception cref="ArgumentNullException"></exception>
-		public Task<StateZoneResponse> GetColorZonesAsync(LightBulb bulb, int startIndex, int endIndex) {
-			if (bulb == null)
-				throw new ArgumentNullException(nameof(bulb));
+		public Task<StateZoneResponse> GetColorZonesAsync(Device device, int startIndex, int endIndex) {
+			if (device == null)
+				throw new ArgumentNullException(nameof(device));
 			if (startIndex > endIndex) throw new ArgumentOutOfRangeException(nameof(startIndex));
 			FrameHeader header = new FrameHeader(GetNextIdentifier());
 			return BroadcastMessageAsync<StateZoneResponse>(
-				bulb.HostName, header, MessageType.GetColorZones, (byte) startIndex, (byte) endIndex);
+				device.HostName, header, MessageType.GetColorZones, (byte) startIndex, (byte) endIndex);
 		}
 	}
 }

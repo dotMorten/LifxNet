@@ -10,7 +10,7 @@ namespace LifxNet {
 		/// </summary>
 		/// <param name="group"></param>
 		/// <returns>StateDeviceChainResponse</returns>
-		public async Task<StateDeviceChainResponse> GetDeviceChainAsync(LightBulb group) {
+		public async Task<StateDeviceChainResponse> GetDeviceChainAsync(Device group) {
 			if (group == null)
 				throw new ArgumentNullException(nameof(group));
 
@@ -27,7 +27,7 @@ namespace LifxNet {
 		/// <param name="userX"></param>
 		/// <param name="userY"></param>
 		/// <returns></returns>
-		public async Task SetUserPositionAsync(LightBulb group, int tileIndex, float userX, float userY) {
+		public async Task SetUserPositionAsync(Device group, int tileIndex, float userX, float userY) {
 			if (group == null)
 				throw new ArgumentNullException(nameof(group));
 
@@ -44,21 +44,21 @@ namespace LifxNet {
 		///  
 		/// For the LIFX Tile it really only makes sense to set x and y to zero, and width to 8.
 		///  </summary>
-		///  <param name="group"></param>
+		///  <param name="device"></param>
 		///  <param name="tileIndex">used to control the starting tile in the chain</param>
 		///  <param name="length">used to get the state of that many tiles beginning from the tile_index.</param>
 		///  <param name="x">Leave at 0</param>
 		///  <param name="y">Leave at 0</param>
 		///  <param name="width">Leave at 8</param>
 		///  <returns>StateTileState64Response</returns>
-		public async Task<StateTileState64Response> GetTileState64Async(LightBulb group, int tileIndex, int length,
+		public async Task<StateTileState64Response> GetTileState64Async(Device device, int tileIndex, int length,
 			int x = 0, int y = 0, int width = 8) {
-			if (group == null)
-				throw new ArgumentNullException(nameof(group));
+			if (device == null)
+				throw new ArgumentNullException(nameof(device));
 
 			FrameHeader header = new FrameHeader(GetNextIdentifier());
 			return await BroadcastMessageAsync<StateTileState64Response>(
-				group.HostName, header, MessageType.GetTileState64, tileIndex, length, Reserved, x, y, width);
+				device.HostName, header, MessageType.GetTileState64, tileIndex, length, Reserved, x, y, width);
 		}
 
 		///  <summary>
@@ -68,7 +68,7 @@ namespace LifxNet {
 		///  
 		/// For the LIFX Tile it really only makes sense to set x and y to zero, and width to 8.
 		///  </summary>
-		///  <param name="bulb"></param>
+		///  <param name="device"></param>
 		///  <param name="tileIndex">used to control the starting tile in the chain</param>
 		///  <param name="length">used to get the state of that many tiles beginning from the tile_index.</param>
 		///  <param name="duration"></param>
@@ -77,14 +77,14 @@ namespace LifxNet {
 		///  <param name="y">Leave at 0</param>
 		///  <param name="width">Leave at 8</param>
 		///  <returns>StateTileState64Response</returns>
-		public async Task<StateTileState64Response> SetTileState64Async(LightBulb bulb, int tileIndex, int length,
+		public async Task<StateTileState64Response> SetTileState64Async(Device device, int tileIndex, int length,
 			long duration, LifxColor[] colors, int x = 0, int y = 0, int width = 8) {
-			if (bulb == null)
-				throw new ArgumentNullException(nameof(bulb));
+			if (device == null)
+				throw new ArgumentNullException(nameof(device));
 
 			FrameHeader header = new FrameHeader(GetNextIdentifier());
 			return await BroadcastMessageAsync<StateTileState64Response>(
-				bulb.HostName, header, MessageType.SetTileState64, tileIndex, length, Reserved, x, y, width, duration,
+				device.HostName, header, MessageType.SetTileState64, tileIndex, length, Reserved, x, y, width, duration,
 				colors);
 		}
 	}
