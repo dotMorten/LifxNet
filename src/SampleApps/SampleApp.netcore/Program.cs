@@ -29,34 +29,42 @@ namespace SampleApp.netcore
             
             // Multi-zone devices
             if (version.Product == 31 || version.Product == 32 || version.Product == 38) {
+                Console.WriteLine("Device is multi-zone, enumerating data.");
                 var extended = false;
                 // If new Z-LED or Beam, check if FW supports "extended" commands.
                 if (version.Product == 32 || version.Product == 38) {
+                    Console.WriteLine("Device is v2 z-led or beam, checking fw.");
                     var fwVersion = await _client.GetDeviceHostFirmwareAsync(e.Device);
-                    if (fwVersion.Version >= 1532997580) extended = true;
+                    Console.WriteLine($"Firmware version is {fwVersion}.");
+                    if (fwVersion.Version >= 1532997580) {
+                        extended = true;
+                        Console.WriteLine("Enabling extended firmware features.");
+                    }
                 }
 
                 int zoneCount;
                 if (extended) {
-                    var zones = await _client.GetExtendedColorZonesAsync((e.Device as LightBulb)!);
+                    var zones = await _client.GetExtendedColorZonesAsync(e.Device);
                     zoneCount = zones.Count;
                 } else {
                     // Original device only supports eight zones?
                     var zones = await _client.GetColorZonesAsync((e.Device as LightBulb)!, 0, 8);
                     zoneCount = zones.Count;
                 }
-                Console.WriteLine($"Device is multi-zone.\r\nExtended Support: {extended}\r\nZone Count: {zoneCount}");
+                Console.WriteLine($"Extended Support: {extended}\r\nZone Count: {zoneCount}");
             }
             
             // Tile
             if (version.Product == 55) {
-                var chain = await _client.GetDeviceChainAsync((e.Device as LightBulb)!);
-                Console.WriteLine($"Device is a tile group.\r\nTile count: {chain.TotalCount}");
+                Console.WriteLine("Device is a tile group, enumerating data.");
+                var chain = await _client.GetDeviceChainAsync(e.Device);
+                Console.WriteLine($"Tile count: {chain.TotalCount}");
             }
             // Switch
             if (version.Product == 70) {
-                var switchState = await _client.GetRelayPowerAsync((e.Device as LightBulb)!, 0);
-                Console.WriteLine($"Device is a switch. \r\nSwitch State: {switchState.Level}");
+                Console.WriteLine("Device is a switch, enumerating data.");
+                var switchState = await _client.GetRelayPowerAsync(e.Device, 0);
+                Console.WriteLine($"Switch State: {switchState.Level}");
             }
         }
     }
