@@ -202,7 +202,7 @@ namespace LifxNet {
 		}
 
 		/// <summary>
-		/// Ask the bulb to return its location information.
+		/// Ask the device to return its location information.
 		/// </summary>
 		/// <param name="device"></param>
 		/// <returns><see cref="StateLocationResponse"/></returns>
