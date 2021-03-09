@@ -90,13 +90,28 @@ namespace LifxNet {
 		/// <param name="endIndex">End index of requested zones</param>
 		/// <returns>Either a "StateZone" response for single-zone devices, or "StateMultiZone" response.</returns>
 		/// <exception cref="ArgumentNullException"></exception>
-		public Task<StateZoneResponse> GetColorZonesAsync(Device device, int startIndex, int endIndex) {
+		public Task<StateMultiZoneResponse> GetColorZonesAsync(Device device, int startIndex, int endIndex) {
 			if (device == null)
 				throw new ArgumentNullException(nameof(device));
 			if (startIndex > endIndex) throw new ArgumentOutOfRangeException(nameof(startIndex));
 			FrameHeader header = new FrameHeader(GetNextIdentifier());
-			return BroadcastMessageAsync<StateZoneResponse>(
+			return BroadcastMessageAsync<StateMultiZoneResponse>(
 				device.HostName, header, MessageType.GetColorZones, (byte) startIndex, (byte) endIndex);
+		}
+		
+		/// <summary>
+		/// Try to get the color zone from our device, non-extended.
+		/// </summary>
+		/// <param name="device">Target device</param>
+		/// <param name="index">Selected index of the requested zone</param>
+		/// <returns>Either a "StateZone" response for single-zone devices, or "StateMultiZone" response.</returns>
+		/// <exception cref="ArgumentNullException"></exception>
+		public Task<StateZoneResponse> GetColorZoneAsync(Device device, int index) {
+			if (device == null)
+				throw new ArgumentNullException(nameof(device));
+			FrameHeader header = new FrameHeader(GetNextIdentifier());
+			return BroadcastMessageAsync<StateZoneResponse>(
+				device.HostName, header, MessageType.GetColorZones, (byte) index, (byte) index);
 		}
 	}
 }
