@@ -1,6 +1,7 @@
 ﻿using System;
 
 namespace LifxNet {
+	[Serializable]
 	public class Tile {
 		public int AccelMeasX { get; set; }
 		public int AccelMeasY { get; set; }
@@ -19,26 +20,20 @@ namespace LifxNet {
 		public Tile() {
 		}
 
-		public void LoadPayload(Payload payload) {
-			AccelMeasX = payload.GetInt16();
-			AccelMeasY = payload.GetInt16();
-			AccelMeasZ = payload.GetInt16();
-			// Skip 2 bytes for reserved
-			payload.Advance(2);
-			UserX = payload.GetFloat32();
-			UserY = payload.GetFloat32();
-			Width = payload.GetUint8();
-			Height = payload.GetUint8();
-			// Skip 2 bytes for reserved
-			payload.Advance(2);
-			DeviceVersionVendor = payload.GetUInt32();
-			DeviceVersionProduct = payload.GetUInt32();
-			DeviceVersionVendor = payload.GetUInt32();
-			FirmwareBuild = payload.GetInt64();
-			// Skip 8 bytes for reserved
-			payload.Advance(8);
-			FirmwareVersionMinor = payload.GetInt16();
-			FirmwareVersionMajor = payload.GetInt16();
+		public void CreateDefault(int index) {
+			AccelMeasX = 0;
+			AccelMeasY = 0;
+			AccelMeasZ = 0;
+			UserX = index * .5f;
+			UserY = index * 1;
+			Width = 8;
+			Height = 8;
+			DeviceVersionProduct = 55;
+			DeviceVersionVendor = 1;
+			FirmwareBuild = 1532997580;
+			FirmwareVersionMajor = 1;
+			FirmwareVersionMajor = 1;
 		}
+
 	}
 }
