@@ -75,21 +75,10 @@ namespace LifxNet {
 		/// <param name="s">Saturation</param>
 		/// <param name="b">Brightness</param>
 		/// <param name="k">Temp, currently ignored</param>
-		public LifxColor(short h, short s, short b, short k = 2700) {
+		public LifxColor(ushort h, ushort s, ushort b, ushort k = 2700) {
 			_color = HsbToColor(h, s, b);
 		}
-
-		/// <summary>
-		/// Create a color from ARGB values
-		/// </summary>
-		/// <param name="a">Alpha</param>
-		/// <param name="r">Red</param>
-		/// <param name="g">Green</param>
-		/// <param name="b">Blue</param>
-		public LifxColor(int a, int r, int g, int b) {
-			_color = Color.FromArgb(a, r, g, b);
-		}
-
+		
 		/// <summary>
 		/// Create a color from RGB Value, with default alpha of 255
 		/// </summary>
@@ -114,7 +103,7 @@ namespace LifxNet {
 		/// <returns>HSBK formatted array of bytes.</returns>
 		public byte[] ToBytes() {
 			var output = new List<byte>();
-			foreach (var u in new ushort[] {(ushort) Hue, (ushort) Saturation, (ushort) Brightness, 2700})
+			foreach (var u in new ushort[] {(ushort) Hue, (ushort) Saturation, (ushort) Brightness,(ushort) 2700})
 				output.AddRange(BitConverter.GetBytes(u));
 			return output.ToArray();
 		}
