@@ -10,55 +10,32 @@ namespace LifxNet {
 	/// </summary>
 	public abstract class LifxResponse {
 		internal static LifxResponse Create(FrameHeader header, MessageType type, uint source, Payload payload) {
-			payload.Reset();
-			switch (type) {
-				case MessageType.DeviceAcknowledgement:
-					return new AcknowledgementResponse(header, type, payload, source);
-				case MessageType.DeviceStateLabel:
-					return new StateLabelResponse(header, type, payload, source);
-				case MessageType.LightState:
-					return new LightStateResponse(header, type, payload, source);
-				case MessageType.LightStatePower:
-					return new LightPowerResponse(header, type, payload, source);
-				case MessageType.InfraredState:
-					return new InfraredStateResponse(header, type, payload, source);
-				case MessageType.DeviceStateVersion:
-					return new StateVersionResponse(header, type, payload, source);
-				case MessageType.DeviceStateHostFirmware:
-					return new StateHostFirmwareResponse(header, type, payload, source);
-				case MessageType.DeviceStateService:
-					return new StateServiceResponse(header, type, payload, source);
-				case MessageType.StateExtendedColorZones:
-					return new StateExtendedColorZonesResponse(header, type, payload, source);
-				case MessageType.StateZone:
-					return new StateZoneResponse(header, type, payload, source);
-				case MessageType.StateMultiZone:
-					return new StateMultiZoneResponse(header, type, payload, source);
-				case MessageType.StateDeviceChain:
-					return new StateDeviceChainResponse(header, type, payload, source);
-				case MessageType.StateTileState64:
-					return new StateTileState64Response(header, type, payload, source);
-				case MessageType.StateRelayPower:
-					return new StateRelayPowerResponse(header, type, payload, source);
-				case MessageType.DeviceStateHostInfo:
-					return new StateHostInfoResponse(header, type, payload, source);
-				case MessageType.DeviceStateWifiInfo:
-					return new StateWifiInfoResponse(header, type, payload, source);
-				case MessageType.DeviceStateWifiFirmware:
-					return new StateWifiFirmwareResponse(header, type, payload, source);
-				case MessageType.DeviceStatePower:
-					return new StatePowerResponse(header, type, payload, source);
-				case MessageType.DeviceStateInfo:
-					return new StateInfoResponse(header, type, payload, source);
-				case MessageType.DeviceStateLocation:
-					return new StateLocationResponse(header, type, payload, source);
-				case MessageType.DeviceStateGroup:
-					return new StateGroupResponse(header, type, payload, source);
-				case MessageType.DeviceEchoResponse:
-					return new EchoResponse(header, type, payload, source);
-				default:
-					return new UnknownResponse(header, type, payload, source);
-			}
+			return type switch {
+				MessageType.DeviceAcknowledgement => new AcknowledgementResponse(header, type, payload, source),
+				MessageType.DeviceStateLabel => new StateLabelResponse(header, type, payload, source),
+				MessageType.LightState => new LightStateResponse(header, type, payload, source),
+				MessageType.LightStatePower => new LightPowerResponse(header, type, payload, source),
+				MessageType.InfraredState => new InfraredStateResponse(header, type, payload, source),
+				MessageType.DeviceStateVersion => new StateVersionResponse(header, type, payload, source),
+				MessageType.DeviceStateHostFirmware => new StateHostFirmwareResponse(header, type, payload, source),
+				MessageType.DeviceStateService => new StateServiceResponse(header, type, payload, source),
+				MessageType.StateExtendedColorZones => new StateExtendedColorZonesResponse(header, type, payload,
+					source),
+				MessageType.StateZone => new StateZoneResponse(header, type, payload, source),
+				MessageType.StateMultiZone => new StateMultiZoneResponse(header, type, payload, source),
+				MessageType.StateDeviceChain => new StateDeviceChainResponse(header, type, payload, source),
+				MessageType.StateTileState64 => new StateTileState64Response(header, type, payload, source),
+				MessageType.StateRelayPower => new StateRelayPowerResponse(header, type, payload, source),
+				MessageType.DeviceStateHostInfo => new StateHostInfoResponse(header, type, payload, source),
+				MessageType.DeviceStateWifiInfo => new StateWifiInfoResponse(header, type, payload, source),
+				MessageType.DeviceStateWifiFirmware => new StateWifiFirmwareResponse(header, type, payload, source),
+				MessageType.DeviceStatePower => new StatePowerResponse(header, type, payload, source),
+				MessageType.DeviceStateInfo => new StateInfoResponse(header, type, payload, source),
+				MessageType.DeviceStateLocation => new StateLocationResponse(header, type, payload, source),
+				MessageType.DeviceStateGroup => new StateGroupResponse(header, type, payload, source),
+				MessageType.DeviceEchoResponse => new EchoResponse(header, type, payload, source),
+				_ => new UnknownResponse(header, type, payload, source)
+			};
 		}
 
 		internal LifxResponse(FrameHeader header, MessageType type, Payload payload, uint source) {
@@ -91,12 +68,7 @@ namespace LifxNet {
 			type, payload, source) {
 			Count = payload.GetUInt16();
 			Index = payload.GetUInt16();
-			var h = payload.GetInt16();
-			var s = payload.GetInt16();
-			var b = payload.GetInt16();
-			var k = payload.GetInt16();
-			Color = new LifxColor(h, s, b, k);
-			payload.Reset();
+			Color = new Payload().GetColor();
 		}
 
 		/// <summary>
@@ -126,7 +98,6 @@ namespace LifxNet {
 			Signal = payload.GetFloat32();
 			Tx = payload.GetUInt32();
 			Rx = payload.GetUInt32();
-			payload.Reset();
 		}
 
 		/// <summary>
@@ -156,7 +127,6 @@ namespace LifxNet {
 			Signal = payload.GetFloat32();
 			Tx = payload.GetUInt32();
 			Rx = payload.GetUInt32();
-			payload.Reset();
 		}
 
 		/// <summary>
@@ -187,7 +157,6 @@ namespace LifxNet {
 			payload.Advance(8);
 			VersionMinor = payload.GetUInt16();
 			VersionMajor = payload.GetUInt16();
-			payload.Reset();
 		}
 		
 		/// <summary>
@@ -214,7 +183,6 @@ namespace LifxNet {
 		internal StatePowerResponse(FrameHeader header, MessageType type, Payload payload, uint source) : base(header,
 			type, payload, source) {
 			Level = payload.GetUInt16();
-			payload.Reset();
 		}
 		
 		/// <summary>
@@ -234,7 +202,6 @@ namespace LifxNet {
 			Time = DateTimeOffset.FromUnixTimeSeconds(payload.GetInt64()).DateTime;
 			Uptime = payload.GetInt64();
 			Downtime = payload.GetInt64();
-			payload.Reset();
 		}
 
 		/// <summary>
@@ -263,7 +230,6 @@ namespace LifxNet {
 			Location = payload.GetBytes(16);
 			Label = payload.GetString(32);
 			Updated = payload.GetUInt64();
-			payload.Reset();
 		}
 
 		public byte[] Location { get; set; }
@@ -282,7 +248,6 @@ namespace LifxNet {
 			Group = payload.GetBytes(16);
 			Label = payload.GetString(32);
 			Updated = payload.GetUInt64();
-			payload.Reset();
 		}
 
 		public byte[] Group { get; set; }
@@ -299,7 +264,6 @@ namespace LifxNet {
 		internal EchoResponse(FrameHeader header, MessageType type, Payload payload, uint source) : base(header,
 			type, payload, source) {
 			RequestPayload = payload.ToArray();
-			payload.Reset();
 		}
 
 		/// <summary>
@@ -318,22 +282,39 @@ namespace LifxNet {
 			type, payload, source) {
 			Tiles = new List<Tile>();
 			StartIndex = payload.GetUint8();
-			while (payload.HasContent()) {
+			for (var i = 0; i < 16; i++) {
 				var tile = new Tile();
-				tile.LoadPayload(payload);
+				tile.AccelMeasX = payload.GetInt16();
+				tile.AccelMeasY = payload.GetInt16();
+				tile.AccelMeasZ = payload.GetInt16();
+				// Skip 2 bytes for reserved
+				payload.Advance(2);
+				tile.UserX = payload.GetFloat32();
+				tile.UserY = payload.GetFloat32();
+				tile.Width = payload.GetUint8();
+				tile.Height = payload.GetUint8();
+				// Skip 2 bytes for reserved
+				payload.Advance();
+				tile.DeviceVersionVendor = payload.GetUInt32();
+				tile.DeviceVersionProduct = payload.GetUInt32();
+				tile.DeviceVersionVersion = payload.GetUInt32();
+				tile.FirmwareBuild = payload.GetInt64();
+				// Skip 8 bytes for reserved
+				payload.Advance(8);
+				tile.FirmwareVersionMinor = payload.GetInt16();
+				tile.FirmwareVersionMajor = payload.GetInt16();
 				Tiles.Add(tile);
 			}
-
+			Console.WriteLine("current payload idx is " + payload.Position);
 			TotalCount = payload.GetUint8();
 			if (TotalCount != Tiles.Count)
 				Debug.WriteLine($"Warning, tile count doesn't match: {TotalCount} : {Tiles.Count}");
-			payload.Reset();
 		}
 
 		/// <summary>
 		/// Count - total number of zones on the device
 		/// </summary>
-		public byte TotalCount { get; }
+		public int TotalCount { get; }
 
 		/// <summary>
 		/// Start Index - Zone the message starts from
@@ -352,14 +333,14 @@ namespace LifxNet {
 	public class StateMultiZoneResponse : LifxResponse {
 		internal StateMultiZoneResponse(FrameHeader header, MessageType type, Payload payload, uint source) : base(
 			header, type, payload, source) {
-			Colors = new List<LifxColor>();
-			Count = payload.GetUInt16();
-			Index = payload.GetUInt16();
-			while (payload.HasContent()) {
-				Colors.Add(payload.GetColor());
+			Colors = new LifxColor[8];
+			Count = payload.GetUint8();
+			Index = payload.GetUint8();
+			for (var i = 0; i < 8; i++) {
+				Debug.WriteLine($"Reading color {i}.");
+				Colors[i] = payload.GetColor();
 			}
-
-			payload.Reset();
+			Debug.WriteLine("Colors read.");
 		}
 
 		/// <summary>
@@ -375,7 +356,7 @@ namespace LifxNet {
 		/// <summary>
 		/// The list of colors returned by the message
 		/// </summary>
-		public List<LifxColor> Colors { get; }
+		public LifxColor[] Colors { get; }
 	}
 
 
@@ -391,8 +372,6 @@ namespace LifxNet {
 			while (payload.HasContent()) {
 				Colors.Add(payload.GetColor());
 			}
-
-			payload.Reset();
 		}
 
 		/// <summary>
@@ -421,7 +400,6 @@ namespace LifxNet {
 			header, type, payload, source) {
 			Service = payload.GetUint8();
 			Port = payload.GetUInt32();
-			payload.Reset();
 		}
 
 		private byte Service { get; }
@@ -464,7 +442,6 @@ namespace LifxNet {
 		internal StateLabelResponse(FrameHeader header, MessageType type, Payload payload, uint source) : base(header,
 			type, payload, source) {
 			Label = payload.GetString().Replace("\0", "");
-			payload.Reset();
 		}
 
 		public string? Label { get; }
@@ -482,7 +459,6 @@ namespace LifxNet {
 			Kelvin = payload.GetUInt16();
 			IsOn = payload.GetUInt16() > 0;
 			Label = payload.GetString(32).Replace("\\0", "");
-			payload.Reset();
 		}
 
 		/// <summary>
@@ -520,7 +496,6 @@ namespace LifxNet {
 		internal LightPowerResponse(FrameHeader header, MessageType type, Payload payload, uint source) : base(header,
 			type, payload, source) {
 			IsOn = payload.GetUInt16() > 0;
-			payload.Reset();
 		}
 
 		public bool IsOn { get; }
@@ -530,7 +505,6 @@ namespace LifxNet {
 		internal InfraredStateResponse(FrameHeader header, MessageType type, Payload payload, uint source) : base(
 			header, type, payload, source) {
 			Brightness = payload.GetUInt16();
-			payload.Reset();
 		}
 
 		public ushort Brightness { get; }
@@ -545,7 +519,6 @@ namespace LifxNet {
 			Vendor = Payload.GetUInt32();
 			Product = Payload.GetUInt32();
 			Version = Payload.GetUInt32();
-			payload.Reset();
 		}
 
 		/// <summary>
@@ -574,7 +547,6 @@ namespace LifxNet {
 			Build = Utilities.Epoch.AddMilliseconds(nanoseconds * 0.000001);
 			//8..15 UInt64 is reserved
 			Version = payload.GetUInt32();
-			payload.Reset();
 		}
 
 		/// <summary>
@@ -596,7 +568,6 @@ namespace LifxNet {
 			header, type, payload, source) {
 			RelayIndex = payload.GetUint8();
 			Level = payload.GetUInt16();
-			payload.Reset();
 		}
 
 		/// <summary>
