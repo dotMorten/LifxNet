@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleApp.netcore", "Sample
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleApp.Universal", "SampleApps\SampleApp.Universal\SampleApp.Universal.csproj", "{9072BB5D-AF63-4E60-98A6-86AE8CF898B1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LifxEmulator", "SampleApps\LifxEmulator\LifxEmulator.csproj", "{35655608-57DD-43AB-9D2E-81B329CC6473}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,6 +85,22 @@ Global
 		{9072BB5D-AF63-4E60-98A6-86AE8CF898B1}.Release|x86.ActiveCfg = Release|x86
 		{9072BB5D-AF63-4E60-98A6-86AE8CF898B1}.Release|x86.Build.0 = Release|x86
 		{9072BB5D-AF63-4E60-98A6-86AE8CF898B1}.Release|x86.Deploy.0 = Release|x86
+		{35655608-57DD-43AB-9D2E-81B329CC6473}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35655608-57DD-43AB-9D2E-81B329CC6473}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35655608-57DD-43AB-9D2E-81B329CC6473}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{35655608-57DD-43AB-9D2E-81B329CC6473}.Debug|ARM.Build.0 = Debug|Any CPU
+		{35655608-57DD-43AB-9D2E-81B329CC6473}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{35655608-57DD-43AB-9D2E-81B329CC6473}.Debug|x64.Build.0 = Debug|Any CPU
+		{35655608-57DD-43AB-9D2E-81B329CC6473}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{35655608-57DD-43AB-9D2E-81B329CC6473}.Debug|x86.Build.0 = Debug|Any CPU
+		{35655608-57DD-43AB-9D2E-81B329CC6473}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35655608-57DD-43AB-9D2E-81B329CC6473}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35655608-57DD-43AB-9D2E-81B329CC6473}.Release|ARM.ActiveCfg = Release|Any CPU
+		{35655608-57DD-43AB-9D2E-81B329CC6473}.Release|ARM.Build.0 = Release|Any CPU
+		{35655608-57DD-43AB-9D2E-81B329CC6473}.Release|x64.ActiveCfg = Release|Any CPU
+		{35655608-57DD-43AB-9D2E-81B329CC6473}.Release|x64.Build.0 = Release|Any CPU
+		{35655608-57DD-43AB-9D2E-81B329CC6473}.Release|x86.ActiveCfg = Release|Any CPU
+		{35655608-57DD-43AB-9D2E-81B329CC6473}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -90,5 +108,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{9165A342-4844-4655-8D1E-D607CD3AA2BD} = {41199DCE-DF15-4BD2-B5A4-1836B3A5BF54}
 		{9072BB5D-AF63-4E60-98A6-86AE8CF898B1} = {41199DCE-DF15-4BD2-B5A4-1836B3A5BF54}
+		{35655608-57DD-43AB-9D2E-81B329CC6473} = {41199DCE-DF15-4BD2-B5A4-1836B3A5BF54}
 	EndGlobalSection
 EndGlobal
