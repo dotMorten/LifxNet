@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Text.Json.Serialization;
 using LifxNet;
+using Newtonsoft.Json;
 
 namespace SampleApp.netcore
 {
@@ -24,8 +27,8 @@ namespace SampleApp.netcore
             Console.WriteLine($"Device {e.Device.MacAddressName} found @ {e.Device.HostName}");
             var version = await _client.GetDeviceVersionAsync(e.Device);
             var state = await _client.GetLightStateAsync((e.Device as LightBulb)!);
-            Console.WriteLine($"{state.Label}\n\tIs on: {state.IsOn}\n\tHue: {state.Hue}\n\tSaturation: {state.Saturation}\n\tBrightness: {state.Brightness}\n\tTemperature: {state.Kelvin}");
-            Console.WriteLine($"Product: {version.Product}\n\tVendor: {version.Vendor}\n\tVersion: {version.Version} ");
+            Console.WriteLine("Version info: " + JsonConvert.SerializeObject(version));
+            Console.WriteLine("State info: " + JsonConvert.SerializeObject(state));
             
             // Multi-zone devices
             if (version.Product == 31 || version.Product == 32 || version.Product == 38) {
@@ -35,23 +38,21 @@ namespace SampleApp.netcore
                 if (version.Product == 32 || version.Product == 38) {
                     Console.WriteLine("Device is v2 z-led or beam, checking fw.");
                     var fwVersion = await _client.GetDeviceHostFirmwareAsync(e.Device);
-                    Console.WriteLine($"Firmware version is {fwVersion}.");
+                    Console.WriteLine("Firmware:" + JsonConvert.SerializeObject(fwVersion));
                     if (fwVersion.Version >= 1532997580) {
                         extended = true;
                         Console.WriteLine("Enabling extended firmware features.");
                     }
                 }
 
-                int zoneCount;
                 if (extended) {
                     var zones = await _client.GetExtendedColorZonesAsync(e.Device);
-                    zoneCount = zones.Count;
+                    Console.WriteLine("Zones: " + JsonConvert.SerializeObject(zones));
                 } else {
                     // Original device only supports eight zones?
-                    var zones = await _client.GetColorZonesAsync((e.Device as LightBulb)!, 0, 8);
-                    zoneCount = zones.Count;
+                    var zones = await _client.GetColorZonesAsync(e.Device, 0, 8);
+                    Console.WriteLine("Zones: " + JsonConvert.SerializeObject(zones));
                 }
-                Console.WriteLine($"Extended Support: {extended}\r\nZone Count: {zoneCount}");
             }
             
             // Tile

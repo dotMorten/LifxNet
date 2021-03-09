@@ -20,7 +20,7 @@ namespace SampleApp.Universal
     {
 
 		ObservableCollection<LightBulb> bulbs = new ObservableCollection<LightBulb>();
-		LifxClient client;
+		LifxClient _client;
         public MainPage()
         {
             InitializeComponent();
@@ -29,18 +29,18 @@ namespace SampleApp.Universal
 		protected async override void OnNavigatedTo(NavigationEventArgs e)
 		{
 			base.OnNavigatedTo(e);
-			client = await LifxClient.CreateAsync();
-			client.DeviceDiscovered += ClientDeviceDeviceDiscovered;
-			client.DeviceLost += ClientDeviceDeviceLost;
-			client.StartDeviceDiscovery();
+			_client = await LifxClient.CreateAsync();
+			_client.DeviceDiscovered += ClientDeviceDeviceDiscovered;
+			_client.DeviceLost += ClientDeviceDeviceLost;
+			_client.StartDeviceDiscovery();
 			await Task.FromResult(true);
 		}
 		protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
 		{
-			client.DeviceDiscovered -= ClientDeviceDeviceDiscovered;
-			client.DeviceLost -= ClientDeviceDeviceLost;
-			client.StopDeviceDiscovery();
-			client = null;
+			_client.DeviceDiscovered -= ClientDeviceDeviceDiscovered;
+			_client.DeviceLost -= ClientDeviceDeviceLost;
+			_client.StopDeviceDiscovery();
+			_client = null;
 			base.OnNavigatingFrom(e);
 		}
 		private void ClientDeviceDeviceLost(object sender, LifxClient.DeviceDiscoveryEventArgs e)
@@ -68,7 +68,7 @@ namespace SampleApp.Universal
             var bulb = bulbList.SelectedItem as LightBulb;
             if (bulb != null)
             {
-                var state = await client.GetLightStateAsync(bulb);
+                var state = await _client.GetLightStateAsync(bulb);
                 Name.Text = state.Label;
                 PowerState.IsOn = state.IsOn;
                 hue = state.Hue;
@@ -89,7 +89,7 @@ namespace SampleApp.Universal
 			var bulb = bulbList.SelectedItem as LightBulb;
 			if (bulb != null)
 			{
-				await client.SetDevicePowerStateAsync(bulb, PowerState.IsOn);
+				await _client.SetDevicePowerStateAsync(bulb, PowerState.IsOn);
 			}
 		}
 
@@ -105,7 +105,7 @@ namespace SampleApp.Universal
 
 		private async void SetColor(LightBulb bulb, ushort? hue, ushort? saturation, ushort? brightness)
 		{
-			if (client == null || bulb == null) return;
+			if (_client == null || bulb == null) return;
 			//Is a task already running? This avoids updating too often.
 			//Come back and execute last call when currently running operation is complete
 			if (pendingUpdateColor != null)
@@ -117,7 +117,7 @@ namespace SampleApp.Universal
 			this.hue = hue.HasValue ? hue.Value : this.hue;
 			this.saturation = saturation.HasValue ? saturation.Value : this.saturation;
 			var b = brightness.HasValue ? brightness.Value : (UInt16)brightnessSlider.Value;
-			var setColorTask = client.SetColorAsync(bulb, this.hue, this.saturation, b, 2700, TimeSpan.Zero);
+			var setColorTask = _client.SetColorAsync(bulb, this.hue, this.saturation, b, 2700, TimeSpan.Zero);
 			var throttleTask = Task.Delay(50); //Ensure task takes minimum 50 ms (no more than 20 messages per second)
 			pendingUpdateColor = Task.WhenAll(setColorTask, throttleTask);
 			try
