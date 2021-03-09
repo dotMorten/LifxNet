@@ -34,30 +34,29 @@ namespace LifxNet {
 			_br = new BinaryReader(_ms);
 		}
 
+		/// <summary>
+		/// Create a payload from an array of objects
+		/// </summary>
+		/// <param name="args"></param>
+		/// <exception cref="NotSupportedException"></exception>
 		public Payload(Object[] args) {
 			_data = new List<byte>();
 			foreach (var arg in args) {
 				switch (arg) {
+					case byte b:
+						Add(b);
+						break;
 					case ushort @ushort:
-						Add(@ushort);
+						Add((byte)@ushort);
 						break;
 					case uint u:
 						Add(u);
-						break;
-					case byte b:
-						Add(b);
 						break;
 					case byte[] bytes:
 						Add(bytes);
 						break;
 					case string s:
 						Add(s.PadRight(32).Take(32).ToString());
-						break;
-					case LifxColor c:
-						Add(c);
-						break;
-					case LifxColor[] colors:
-						Add(colors);
 						break;
 					case long l:
 						Add(l);
@@ -76,6 +75,18 @@ namespace LifxNet {
 						break;
 					case ulong u:
 						Add(u);
+						break;
+					case LifxColor c:
+						Add(c);
+						break;
+					case LifxColor[] colors:
+						Add(colors);
+						break;
+					case DateTime dt:
+						Add(dt);
+						break;
+					case Tile t:
+						Add(t);
 						break;
 					default:
 						Debug.WriteLine("Unsupported type!" + args.GetType().FullName);
@@ -98,6 +109,11 @@ namespace LifxNet {
 			_len = _ms.Length;
 			_br = new BinaryReader(_ms);
 		}
+
+		/// <summary>
+		/// Get the current position of the array
+		/// </summary>
+		public int Position => (int) _ms.Position;
 
 		/// <summary>
 		/// Return our base byte list as an array
@@ -372,5 +388,30 @@ namespace LifxNet {
 				Add(lc);
 			}
 		}
+
+		private void Add(DateTime input) {
+			var epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+			Add(Convert.ToInt64((input - epoch).TotalSeconds));
+		}
+
+		private void Add(Tile input) {
+			Add(input.AccelMeasX);
+			Add(input.AccelMeasY);
+			Add(input.AccelMeasZ);
+			Add(0);
+			Add(input.UserX);
+			Add(input.UserY);
+			Add(input.Width);
+			Add(input.Height);
+			Add((byte) 0);
+			Add(input.DeviceVersionVendor);
+			Add(input.DeviceVersionProduct);
+			Add(input.DeviceVersionVersion);
+			Add(input.FirmwareBuild);
+			Add((ulong) 0);
+			Add(input.FirmwareVersionMinor);
+			Add(input.FirmwareVersionMajor);
+			Add((uint) 0);
+		} 
 	}
 }
