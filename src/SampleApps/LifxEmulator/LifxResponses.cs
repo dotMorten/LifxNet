@@ -186,8 +186,8 @@ namespace LifxEmulator {
 				var tile = new Tile();
 				tile.CreateDefault(i);
 				Tiles.Add(tile);
+				args.Add(tile.ToBytes());
 			}
-			args.AddRange(Tiles);
 			args.Add(TotalCount);
 			Payload = new Payload(args.ToArray());
 			Payload.Rewind();

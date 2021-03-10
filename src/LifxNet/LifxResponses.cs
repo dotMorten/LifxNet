@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace LifxNet {
 	/// <summary>
@@ -284,31 +285,10 @@ namespace LifxNet {
 			StartIndex = payload.GetUint8();
 			for (var i = 0; i < 16; i++) {
 				var tile = new Tile();
-				tile.AccelMeasX = payload.GetInt16();
-				tile.AccelMeasY = payload.GetInt16();
-				tile.AccelMeasZ = payload.GetInt16();
-				// Skip 2 bytes for reserved
-				payload.Advance(2);
-				tile.UserX = payload.GetFloat32();
-				tile.UserY = payload.GetFloat32();
-				tile.Width = payload.GetUint8();
-				tile.Height = payload.GetUint8();
-				// Skip 2 bytes for reserved
-				payload.Advance();
-				tile.DeviceVersionVendor = payload.GetUInt32();
-				tile.DeviceVersionProduct = payload.GetUInt32();
-				tile.DeviceVersionVersion = payload.GetUInt32();
-				tile.FirmwareBuild = payload.GetInt64();
-				// Skip 8 bytes for reserved
-				payload.Advance(8);
-				tile.FirmwareVersionMinor = payload.GetInt16();
-				tile.FirmwareVersionMajor = payload.GetInt16();
+				tile.LoadBytes(payload);
 				Tiles.Add(tile);
 			}
-			Console.WriteLine("current payload idx is " + payload.Position);
 			TotalCount = payload.GetUint8();
-			if (TotalCount != Tiles.Count)
-				Debug.WriteLine($"Warning, tile count doesn't match: {TotalCount} : {Tiles.Count}");
 		}
 
 		/// <summary>

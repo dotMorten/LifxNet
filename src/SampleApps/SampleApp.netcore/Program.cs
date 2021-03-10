@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Text.Json.Serialization;
 using LifxNet;
 using Newtonsoft.Json;
 
@@ -36,10 +34,7 @@ namespace SampleApp.netcore
                 var extended = false;
                 // If new Z-LED or Beam, check if FW supports "extended" commands.
                 if (version.Product == 32 || version.Product == 38) {
-                    Console.WriteLine("Device is v2 z-led or beam, checking fw.");
-                    var fwVersion = await _client.GetDeviceHostFirmwareAsync(e.Device);
-                    Console.WriteLine("Firmware:" + JsonConvert.SerializeObject(fwVersion));
-                    if (fwVersion.Version >= 1532997580) {
+                    if (version.Version >= 1532997580) {
                         extended = true;
                         Console.WriteLine("Enabling extended firmware features.");
                     }
@@ -59,7 +54,7 @@ namespace SampleApp.netcore
             if (version.Product == 55) {
                 Console.WriteLine("Device is a tile group, enumerating data.");
                 var chain = await _client.GetDeviceChainAsync(e.Device);
-                Console.WriteLine($"Tile count: {chain.TotalCount}");
+                Console.WriteLine("Tile chain: " + JsonConvert.SerializeObject(chain));
             }
             // Switch
             if (version.Product == 70) {
