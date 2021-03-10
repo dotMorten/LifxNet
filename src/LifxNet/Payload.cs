@@ -9,11 +9,11 @@ namespace LifxNet {
 	/// <summary>
 	/// A wrapper class for a byte payload
 	/// Any time the payload is read from, our pointer increments
-	/// the proper number of bits until the end is reached,
+	/// the proper number of bytes until the end is reached,
 	/// at which time a message will be logged. Should eventually throw an error or something...
 	/// </summary>
 	public class Payload {
-		private List<byte> _data;
+		private readonly List<byte> _data;
 		private readonly BinaryReader _br;
 		private readonly MemoryStream _ms;
 		private readonly long _len;
@@ -148,7 +148,7 @@ namespace LifxNet {
 		}
 
 		/// <summary>
-		/// Rewind our pointer N bits
+		/// Rewind our pointer N bytes
 		/// </summary>
 		/// <param name="len">How far to rewind. Default is 1.</param>
 		public void Rewind(int len = 1) {
@@ -160,7 +160,7 @@ namespace LifxNet {
 		}
 
 		/// <summary>
-		/// Forward our pointer N bits
+		/// Forward our pointer N bytes
 		/// </summary>
 		/// <param name="len">How far to advance. Default is 1.</param>
 		public void Advance(int len = 1) {
@@ -203,6 +203,11 @@ namespace LifxNet {
 			return new LifxColor();
 		}
 
+		/// <summary>
+		/// Get an array of bytes from the reader
+		/// </summary>
+		/// <param name="len"></param>
+		/// <returns></returns>
 		public byte[] GetBytes(int len) {
 			return _br.ReadBytes(len);
 		}
@@ -222,7 +227,7 @@ namespace LifxNet {
 		}
 
 		/// <summary>
-		/// Read UInt16 from array and increment pointer 2 bits
+		/// Read UInt16 from array and increment pointer 2 bytes
 		/// </summary>
 		/// <returns>ushort</returns>
 		public ushort GetUInt16() {
@@ -236,7 +241,7 @@ namespace LifxNet {
 		}
 
 		/// <summary>
-		/// Read Int16 from array and increment pointer 2 bits.
+		/// Read Int16 from array and increment pointer 2 bytes.
 		/// </summary>
 		/// <returns>short</returns>
 		public short GetInt16() {
@@ -250,7 +255,7 @@ namespace LifxNet {
 		}
 
 		/// <summary>
-		/// Read Int32 from array and increment pointer 4 bits.
+		/// Read Int32 from array and increment pointer 4 bytes.
 		/// </summary>
 		/// <returns>int</returns>
 		public int GetInt32() {
@@ -264,7 +269,7 @@ namespace LifxNet {
 		}
 
 		/// <summary>
-		/// Read a UInt32 from array and increment pointer 4 bits.
+		/// Read a UInt32 from array and increment pointer 4 bytes.
 		/// </summary>
 		/// <returns></returns>
 		public uint GetUInt32() {
@@ -278,7 +283,7 @@ namespace LifxNet {
 		}
 
 		/// <summary>
-		/// Read an Int64 from array and increment pointer 8 bits.
+		/// Read an Int64 from array and increment pointer 8 bytes.
 		/// </summary>
 		/// <returns>long</returns>
 		public long GetInt64() {
@@ -292,7 +297,7 @@ namespace LifxNet {
 		}
 
 		/// <summary>
-		/// Read a UInt64 from array and increment pointer 8 bits.
+		/// Read a UInt64 from array and increment pointer 8 bytes.
 		/// </summary>
 		/// <returns>ulong</returns>
 		public ulong GetUInt64() {
@@ -306,7 +311,7 @@ namespace LifxNet {
 		}
 
 		/// <summary>
-		/// Read a Float32 from array and increment pointer 4 bits.
+		/// Read a Float32 from array and increment pointer 4 bytes.
 		/// </summary>
 		/// <returns>float</returns>
 		public float GetFloat32() {
