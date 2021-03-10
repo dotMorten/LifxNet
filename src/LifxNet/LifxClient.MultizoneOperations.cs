@@ -4,9 +4,6 @@ using System.Threading.Tasks;
 
 namespace LifxNet {
 	public partial class LifxClient : IDisposable {
-		private const byte Apply = 0x01;
-
-
 		/// <summary>
 		/// This message is used for changing the color of either a single or multiple zones.
 		/// </summary>
@@ -15,11 +12,12 @@ namespace LifxNet {
 		/// <param name="endIndex">End index to target</param>
 		/// <param name="color">LifxColor to use</param>
 		/// <param name="transitionDuration">How long to fade</param>
+		/// <param name="apply">Whether the effect should be applied immediately or not.</param>
 		/// <returns></returns>
 		/// <exception cref="ArgumentNullException"></exception>
 		/// <exception cref="ArgumentOutOfRangeException"></exception>
 		public async Task SetColorZonesAsync(Device device, int startIndex, int endIndex, LifxColor color,
-			TimeSpan transitionDuration) {
+			TimeSpan transitionDuration, bool apply=false) {
 			if (device == null)
 				throw new ArgumentNullException(nameof(device));
 			if (transitionDuration.TotalMilliseconds > uint.MaxValue ||
@@ -28,11 +26,11 @@ namespace LifxNet {
 			}
 
 			if (startIndex > endIndex) throw new ArgumentOutOfRangeException(nameof(startIndex));
-
+			var doApply = apply ? 0x01 : 0x00;
 			FrameHeader header = new FrameHeader(GetNextIdentifier(), true);
 			var duration = (uint) transitionDuration.TotalMilliseconds;
 			await BroadcastMessageAsync<AcknowledgementResponse>(device.HostName, header,
-				MessageType.SetColorZones, (byte) startIndex, (byte) endIndex, color, duration, Apply);
+				MessageType.SetColorZones, (byte) startIndex, (byte) endIndex, color, duration, doApply);
 		}
 
 		/// <summary>
@@ -43,12 +41,13 @@ namespace LifxNet {
 		/// <param name="index">Start index of the zone. Should probably just be 0 for most cases.</param>
 		/// <param name="colors">An array of system.drawing.colors. For completeness, I should probably make an
 		/// overload for this that accepts HSB values, but that's kind of a pain. :P</param>
+		/// <param name="apply">Whether to apply the effect or immediately or not. defaults to false.</param>
 		/// <returns></returns>
 		/// <exception cref="ArgumentNullException">Thrown if the device is null</exception>
 		/// <exception cref="ArgumentOutOfRangeException">Thrown if the duration is longer than the max</exception>
 		/// 
 		public async Task SetExtendedColorZonesAsync(Device device, TimeSpan transitionDuration, uint index,
-			List<LifxColor> colors) {
+			List<LifxColor> colors, bool apply = false) {
 			if (device == null)
 				throw new ArgumentNullException(nameof(device));
 			if (transitionDuration.TotalMilliseconds > uint.MaxValue ||
@@ -63,9 +62,10 @@ namespace LifxNet {
 			foreach (var color in colors) {
 				colorBytes.AddRange(color.ToBytes());
 			}
+			var doApply = apply ? 0x01 : 0x00;
 
 			await BroadcastMessageAsync<AcknowledgementResponse>(device.HostName, header,
-				MessageType.SetExtendedColorZones, duration, Apply, index, count, colorBytes);
+				MessageType.SetExtendedColorZones, duration, doApply, index, count, colorBytes);
 		}
 
 		/// <summary>
