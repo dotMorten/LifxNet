@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
+using LifxNet;
+using Console = Colorful.Console;
 
 namespace LifxEmulator {
 	internal static class Program {
@@ -172,8 +175,32 @@ namespace LifxEmulator {
 			var type = (MessageType) br.ReadUInt16();
 			Console.WriteLine($"Incoming type is {type}");
 			ms.Seek(2, SeekOrigin.Current); //skip reserved
+			var payload = new Payload(size > 36 ? br.ReadBytes(size - 36) : new byte[] { });
+			if (type == MessageType.SetColorZones) {
+				var start = payload.GetUint8();
+				var end = payload.GetUint8();
+				var color = payload.GetColor();
+				Debug.WriteLine($"Setting zones {start} - {end} to {color}");
+			}
+
+			if (type == MessageType.SetTileState64) {
+				var idx = payload.GetUint8();
+				var len = payload.GetUint8();
+				payload.Advance(); // reserved
+				var x = payload.GetUint8();
+				var y = payload.GetUint8();
+				var width = payload.GetUint8();
+				var duration = payload.GetUInt32();
+				var colors = new List<LifxColor>();
+				Console.WriteLine("Colors: ");
+				for (var i = 0; i < 64; i++) {
+					var color = payload.GetColor();
+					Console.Write(i.ToString(),Color.FromArgb(color.R, color.G, color.B));
+				}
+				Console.WriteLine("");
+			}
 			var res = LifxResponse.Create(header, type, source,
-				new Payload(size > 36 ? br.ReadBytes(size - 36) : new byte[] { }),_deviceVersion);
+				payload,_deviceVersion);
 			await Task.FromResult(true);
 			return res;
 		}

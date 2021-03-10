@@ -44,6 +44,12 @@ namespace LifxEmulator {
 				case MessageType.GetRelayPower:
 					type = MessageType.StateRelayPower;
 					return new StateRelayPowerResponse(header, type, source);
+				case MessageType.DeviceGetPower:
+					type = MessageType.DeviceStatePower;
+					return new StatePowerResponse(header, type, source);
+				case MessageType.DeviceSetPower:
+					type = MessageType.DeviceAcknowledgement;
+					return new AcknowledgementResponse(header, type, source);
 				default:
 					type = MessageType.DeviceAcknowledgement;
 					return new AcknowledgementResponse(header, type, source);
@@ -207,6 +213,21 @@ namespace LifxEmulator {
 		/// The list of colors returned by the message
 		/// </summary>
 		public List<Tile> Tiles { get; }
+	}
+	
+	public class StatePowerResponse : LifxResponse {
+		internal StatePowerResponse(FrameHeader header, MessageType type,  uint source) : base(header,
+			type, source) {
+			Level = 65535;
+			var args = new List<object> {Level};
+			Payload = new Payload(args.ToArray());
+		}
+		
+		/// <summary>
+		/// Zero implies standby and non-zero sets a corresponding power draw level. Currently only 0 and 65535 are supported.
+		/// </summary>
+		public ulong Level { get; set; }
+		
 	}
 
 	/// <summary>
