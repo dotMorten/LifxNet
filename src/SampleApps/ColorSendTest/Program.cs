@@ -16,7 +16,7 @@ namespace ColorSendTest {
 		private static List<Device> _devicesTile;
 		private static List<Device> _devicesSwitch;
 		
-		static void Main(string[] args) {
+		static async Task Main(string[] args) {
 			var tr1 = new TextWriterTraceListener(Console.Out);
 			Trace.Listeners.Add(tr1);
 			_devicesBulb = new List<Device>();
@@ -28,7 +28,7 @@ namespace ColorSendTest {
 			_client.DeviceDiscovered += ClientDeviceDiscovered;
 			_client.DeviceLost += ClientDeviceLost;
 			_client.StartDeviceDiscovery();
-			Task.Delay(15000);
+			await Task.Delay(15000);
 			_client.StopDeviceDiscovery();
 			Console.WriteLine("Please select a device type to test (Enter a number):");
 			if (_devicesBulb.Count > 0) {
@@ -55,19 +55,19 @@ namespace ColorSendTest {
 			switch (selection) {
 				case 1:
 					Console.WriteLine("Flashing bulbs on and off.");
-					FlashBulbs().ConfigureAwait(true);
+					await FlashBulbs();
 					break;
 				case 2:
 					Console.WriteLine("Flashing multizone v1 devices on and off.");
-					FlashMultizone().ConfigureAwait(true);
+					await FlashMultizone();
 					break;
 				case 3:
 					Console.WriteLine("Flashing multizone v2 devices on and off.");
-					FlashMultizoneV2().ConfigureAwait(true);
+					await FlashMultizoneV2();
 					break;
 				case 4:
 					Console.WriteLine("Flashing tile devices on and off.");
-					FlashTiles().ConfigureAwait(true);
+					await FlashTiles();
 					break;
 				case 5:
 					Console.WriteLine("Toggling switches is not enabled yet.");
@@ -134,7 +134,7 @@ namespace ColorSendTest {
 				stateList.Add(state);
 				var zoneState = await _client.GetColorZonesAsync(m,0,8);
 				responses.Add(zoneState);
-				await _client.SetPowerAsync(m, 1);
+				_client.SetPowerAsync(m, 1).ConfigureAwait(false);
 			}
 
 			var idx = 0;
@@ -144,7 +144,8 @@ namespace ColorSendTest {
 				var start = state.Index;
 				var total = start - count;
 				for (var i = start; i < count; i++) {
-					var progress = (start - i) / total;
+					var pi = i * 1.0f;
+					var progress = (start - pi) / total;
 					var apply = i == count - 1; 
 					_client.SetColorZonesAsync(m, i, i, Rainbow(progress), TimeSpan.Zero, apply);
 				}
@@ -162,7 +163,7 @@ namespace ColorSendTest {
 				var start = state.Index;
 				var total = start - count;
 				for (var i = start; i < count; i++) {
-					await _client.SetColorZonesAsync(m, i, i, black, TimeSpan.Zero, true);
+					_client.SetColorZonesAsync(m, i, i, black, TimeSpan.Zero, true);
 				}
 				idx++;
 			}
@@ -172,7 +173,7 @@ namespace ColorSendTest {
 			foreach (var m in _devicesMulti) {
 				var power = stateList[idx];
 				if (power == 0) {
-					await _client.SetPowerAsync(m, power);
+					_client.SetPowerAsync(m, power);
 				}
 			}
 		}
@@ -185,7 +186,7 @@ namespace ColorSendTest {
 				stateList.Add(state);
 				var zoneState = await _client.GetExtendedColorZonesAsync(m);
 				responses.Add(zoneState);
-				await _client.SetPowerAsync(m, 1);
+				_client.SetPowerAsync(m, 1);
 			}
 			Debug.WriteLine("Setting devices to rainbow!");
 			var idx = 0;
@@ -197,7 +198,8 @@ namespace ColorSendTest {
 				var colors = new List<LifxColor>();
 				
 				for (var i = start; i < count; i++) {
-					var progress = (start - i) / total;
+					var pi = i * 1.0f;
+					var progress = (start - pi) / total;
 					colors.Add(Rainbow(progress));
 				}
 				_client.SetExtendedColorZonesAsync(m, TimeSpan.Zero, start, colors, true);
@@ -227,7 +229,7 @@ namespace ColorSendTest {
 			foreach (var m in _devicesMulti) {
 				var power = stateList[idx];
 				if (power == 0) {
-					await _client.SetPowerAsync(m, power);
+					_client.SetPowerAsync(m, power);
 				}
 			}
 		}
@@ -235,9 +237,9 @@ namespace ColorSendTest {
 		private static async Task FlashTiles() {
 			var chains = new List<StateDeviceChainResponse>();
 			foreach (var t in _devicesTile) {
-				var state = await _client.GetDeviceChainAsync(t);
+				var state = _client.GetDeviceChainAsync(t).Result;
 				chains.Add(state);
-				await _client.SetPowerAsync(t, 1);
+				_client.SetPowerAsync(t, 1);
 			}
 
 			var idx = 0;
@@ -248,7 +250,8 @@ namespace ColorSendTest {
 				var tidx = 0;
 				var colors = new List<LifxColor>();
 				for (var c = 0; c < 64; c++) {
-					var progress = c / 64;
+					var pi = c * 1.0f;
+					var progress = pi / 64;
 					colors.Add(Rainbow(progress));
 				}
 				for (var i = state.StartIndex; i < state.TotalCount; i++) {
