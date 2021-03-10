@@ -110,6 +110,15 @@ namespace LifxNet {
 
 
 		/// <summary>
+		/// Return rgb string representation of the color
+		/// </summary>
+		/// <returns></returns>
+		public override string ToString() {
+			return R + ", " + G + ", " + B;
+		}
+
+
+		/// <summary>
 		/// Convert HSB Values to a standard Color object
 		/// </summary>
 		/// <param name="h">Hue</param>

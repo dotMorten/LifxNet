@@ -54,7 +54,7 @@ namespace LifxNet {
 		private void HandleIncomingMessages(byte[] data, IPEndPoint endpoint) {
 			var remote = endpoint;
 			var msg = ParseMessage(data);
-			if (remote.Port == 56700) Debug.WriteLine("Message Type: " + msg.Type);
+			if (remote.Port == 56700) Debug.WriteLine("Incoming Message Type: " + msg.Type);
 			switch (msg.Type) {
 				case MessageType.DeviceStateService:
 					ProcessDeviceDiscoveryMessage(remote.Address, msg);
