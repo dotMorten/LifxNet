@@ -18,7 +18,6 @@ namespace ColorSendTest {
 		
 		static async Task Main(string[] args) {
 			var tr1 = new TextWriterTraceListener(Console.Out);
-			Trace.Listeners.Add(tr1);
 			_devicesBulb = new List<Device>();
 			_devicesMulti = new List<Device>();
 			_devicesMultiV2 = new List<Device>();
@@ -27,28 +26,30 @@ namespace ColorSendTest {
 			_client = LifxClient.CreateAsync().Result;
 			_client.DeviceDiscovered += ClientDeviceDiscovered;
 			_client.DeviceLost += ClientDeviceLost;
+			Console.WriteLine("Enumerating devices, please wait 15 seconds...");
 			_client.StartDeviceDiscovery();
-			await Task.Delay(15000);
+			await Task.Delay(5000);
 			_client.StopDeviceDiscovery();
+			Trace.Listeners.Add(tr1);
 			Console.WriteLine("Please select a device type to test (Enter a number):");
 			if (_devicesBulb.Count > 0) {
-				Console.WriteLine("Bulbs: 1");
+				Console.WriteLine("1: Bulbs");
 			}
 
 			if (_devicesMulti.Count > 0) {
-				Console.WriteLine("Multi Zone V1: 2");
+				Console.WriteLine("2: Multi Zone V1");
 			}
 			
 			if (_devicesMultiV2.Count > 0) {
-				Console.WriteLine("Multi Zone V2: 3");
+				Console.WriteLine("3: Multi Zone V2");
 			}
 			
 			if (_devicesTile.Count > 0) {
-				Console.WriteLine("Tiles: 4");
+				Console.WriteLine("4: Tiles");
 			}
 			
 			if (_devicesSwitch.Count > 0) {
-				Console.WriteLine("Switch: 5");
+				Console.WriteLine("5: Switch");
 			}
 
 			var selection = int.Parse(Console.ReadLine() ?? "0");
@@ -282,19 +283,19 @@ namespace ColorSendTest {
 		private static void FlashSwitches() {
 			
 		}
-		
-		public static LifxColor Rainbow(float progress) {
+
+		private static LifxColor Rainbow(float progress) {
+			Console.WriteLine("Progress is " + progress);
 			var div = Math.Abs(progress % 1) * 6;
 			var ascending = (int) (div % 1 * 255);
 			var descending = 255 - ascending;
-			var alpha = 0;
 			var output = (int) div switch {
-				0 => Color.FromArgb(alpha, 255, ascending, 0),
-				1 => Color.FromArgb(alpha, descending, 255, 0),
-				2 => Color.FromArgb(alpha, 0, 255, ascending),
-				3 => Color.FromArgb(alpha, 0, descending, 255),
-				4 => Color.FromArgb(alpha, ascending, 0, 255),
-				_ => Color.FromArgb(alpha, 255, 0, descending)
+				0 => Color.FromArgb(255, ascending, 0),
+				1 => Color.FromArgb(descending, 255, 0),
+				2 => Color.FromArgb(0, 255, ascending),
+				3 => Color.FromArgb(0, descending, 255),
+				4 => Color.FromArgb(ascending, 0, 255),
+				_ => Color.FromArgb(255, 0, descending)
 			};
 			return new LifxColor(output);
 		}
@@ -308,27 +309,24 @@ namespace ColorSendTest {
         {
             Console.WriteLine($"Device {e.Device.MacAddressName} found @ {e.Device.HostName}");
             var version = await _client.GetDeviceVersionAsync(e.Device);
-            var state = await _client.GetLightStateAsync((e.Device as LightBulb)!);
-            Console.WriteLine("Version info: " + JsonConvert.SerializeObject(version));
-            Console.WriteLine("State info: " + JsonConvert.SerializeObject(state));
             var added = false;
             // Multi-zone devices
             if (version.Product == 31 || version.Product == 32 || version.Product == 38) {
-                Console.WriteLine("Device is multi-zone, enumerating data.");
                 var extended = false;
                 // If new Z-LED or Beam, check if FW supports "extended" commands.
                 if (version.Product == 32 || version.Product == 38) {
                     if (version.Version >= 1532997580) {
                         extended = true;
-                        Console.WriteLine("Enabling extended firmware features.");
                     }
                 }
 
                 if (extended) {
 	                added = true;
+	                Console.WriteLine("Adding V2 Multi zone Device.");
 	                _devicesMultiV2.Add(e.Device);
                 } else {
 	                added = true;
+	                Console.WriteLine("Adding V1 Multi zone Device.");
                     _devicesMulti.Add(e.Device);
                 }
             }
@@ -336,15 +334,18 @@ namespace ColorSendTest {
             // Tile
             if (version.Product == 55) {
 	            added = true;
+	            Console.WriteLine("Adding Tile Device");
                 _devicesTile.Add(e.Device);
             }
             // Switch
             if (version.Product == 70) {
 	            added = true;
+	            Console.WriteLine("Adding Switch Device.");
                 _devicesSwitch.Add(e.Device);
             }
 
             if (!added) {
+	            Console.WriteLine("Adding Bulb.");
 	            _devicesBulb.Add(e.Device);
             }
         }
