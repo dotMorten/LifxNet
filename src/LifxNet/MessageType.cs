@@ -1,19 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace LifxNet
-{
-	internal enum MessageType : ushort
-	{
+﻿namespace LifxNet {
+	internal enum MessageType : ushort {
 		//Device Messages
 		DeviceGetService = 0x02,
 		DeviceStateService = 0x03,
+		//Undocumented?
 		DeviceGetTime = 0x04,
 		DeviceSetTime = 0x05,
 		DeviceStateTime = 0x06,
+		// Documented
 		DeviceGetHostInfo = 12,
 		DeviceStateHostInfo = 13,
 		DeviceGetHostFirmware = 14,
@@ -41,6 +35,7 @@ namespace LifxNet
 		DeviceStateGroup = 53,
 		DeviceEchoRequest = 58,
 		DeviceEchoResponse = 59,
+
 		//Light messages
 		LightGet = 101,
 		LightSetColor = 102,
@@ -50,14 +45,38 @@ namespace LifxNet
 		LightSetPower = 117,
 		LightStatePower = 118,
 		LightSetWaveformOptional = 119,
+
 		//Infrared
 		InfraredGet = 120,
 		InfraredState = 121,
 		InfraredSet = 122,
 
+		//Multi zone
+		SetColorZones = 501,
+		GetColorZones = 502,
+		StateZone = 503,
+		StateMultiZone = 506,
+		SetExtendedColorZones = 510,
+		GetExtendedColorZones = 511,
+		StateExtendedColorZones = 512,
+
+		//Tile
+		GetDeviceChain = 701,
+		StateDeviceChain = 702,
+		SetUserPosition = 703,
+		GetTileState64 = 707,
+		StateTileState64 = 711,
+		SetTileState64 = 715,
+
+		//Switch 
+		GetRelayPower = 816,
+		SetRelayPower = 817,
+		StateRelayPower = 818,
+
 		//Unofficial
 		LightGetTemperature = 0x6E,
-        //LightStateTemperature = 0x6f,
+
+		//LightStateTemperature = 0x6f,
 		SetLightBrightness = 0x68
 	}
 }

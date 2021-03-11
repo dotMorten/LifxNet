@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace LifxNet {
+namespace LifxEmulator {
 	internal abstract class LifxPacket {
 		private byte[] _payload;
 		private ushort _type;
