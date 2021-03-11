@@ -180,22 +180,15 @@ namespace LifxEmulator {
 				var start = payload.GetUint8();
 				var end = payload.GetUint8();
 				var color = payload.GetColor();
-				Debug.WriteLine($"Setting zones {start} - {end} to {color}");
+				Debug.WriteLine($"Setting zones {start} - {end} to {color.ToHsbkString()}", color.Color);
 			}
 
 			if (type == MessageType.SetTileState64) {
-				var idx = payload.GetUint8();
-				var len = payload.GetUint8();
-				payload.Advance(); // reserved
-				var x = payload.GetUint8();
-				var y = payload.GetUint8();
-				var width = payload.GetUint8();
-				var duration = payload.GetUInt32();
-				var colors = new List<LifxColor>();
+				payload.Advance(9);
 				Console.WriteLine("Colors: ");
 				for (var i = 0; i < 64; i++) {
 					var color = payload.GetColor();
-					Console.Write(i.ToString(),Color.FromArgb(color.R, color.G, color.B));
+					Console.Write(i.ToString(), color.Color);
 				}
 				Console.WriteLine("");
 			}
