@@ -82,6 +82,18 @@ namespace LifxNet {
 		}
 
 		/// <summary>
+		/// Sets color and temperature of bulb
+		/// </summary>
+		/// <param name="bulb">The bulb to set</param>
+		/// <param name="color">The LifxColor to set the bulb to</param>
+		/// <param name="duration">An optional transition duration, in milliseconds.</param>
+		/// <returns></returns>
+		public Task SetColorAsync(LightBulb bulb, LifxColor color, int duration = 0) {
+			return SetColorAsync(bulb, (ushort)color.LifxHue, (ushort)color.LifxSaturation, (ushort)color.LifxBrightness, (ushort)color.K,
+				TimeSpan.FromMilliseconds(duration));
+		}
+
+		/// <summary>
 		/// Sets color and temperature for a bulb
 		/// </summary>
 		/// <param name="bulb"></param>
