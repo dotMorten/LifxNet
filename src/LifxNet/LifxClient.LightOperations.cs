@@ -59,7 +59,7 @@ namespace LifxNet
 
 			FrameHeader header = new FrameHeader()
 			{
-				Identifier = GetNextIdentifier(),
+				Sequence = GetNextSequence(),
 				AcknowledgeRequired = true
 			};
 
@@ -84,7 +84,7 @@ namespace LifxNet
 
 			FrameHeader header = new FrameHeader()
 			{
-				Identifier = GetNextIdentifier(),
+				Sequence = GetNextSequence(),
 				AcknowledgeRequired = true
 			};
 			return (await BroadcastMessageAsync<LightPowerResponse>(
@@ -146,7 +146,7 @@ namespace LifxNet
 				System.Diagnostics.Debug.WriteLine("Setting color to {0}", bulb.HostName);
 			FrameHeader header = new FrameHeader()
 			{
-				Identifier = GetNextIdentifier(),
+				Sequence = GetNextSequence(),
 				AcknowledgeRequired = true
 			};
 			UInt32 duration = (UInt32)transitionDuration.TotalMilliseconds;
@@ -197,7 +197,7 @@ namespace LifxNet
 				throw new ArgumentNullException(nameof(bulb));
 			FrameHeader header = new FrameHeader()
 			{
-				Identifier = GetNextIdentifier(),
+				Sequence = GetNextSequence(),
 				AcknowledgeRequired = false
 			};
 			return BroadcastMessageAsync<LightStateResponse>(
@@ -217,7 +217,7 @@ namespace LifxNet
 
 			FrameHeader header = new FrameHeader()
 			{
-				Identifier = GetNextIdentifier(),
+				Sequence = GetNextSequence(),
 				AcknowledgeRequired = true
 			};	
 			return (await BroadcastMessageAsync<InfraredStateRespone>(
@@ -237,7 +237,7 @@ namespace LifxNet
 			System.Diagnostics.Debug.WriteLine($"Sending SetInfrared({brightness}) to {device.HostName}");
 			FrameHeader header = new FrameHeader()
 			{
-				Identifier = GetNextIdentifier(),
+				Sequence = GetNextSequence(),
 				AcknowledgeRequired = true
 			};
 

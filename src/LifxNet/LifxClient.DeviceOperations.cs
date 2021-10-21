@@ -34,7 +34,7 @@ namespace LifxNet
 			System.Diagnostics.Debug.WriteLine($"Sending DeviceSetPower({isOn}) to {device.HostName}");
 			FrameHeader header = new FrameHeader()
 			{
-				Identifier = GetNextIdentifier(),
+				Sequence = GetNextSequence(),
 				AcknowledgeRequired = true
 			};
 
@@ -54,7 +54,7 @@ namespace LifxNet
 
 			FrameHeader header = new FrameHeader()
 			{
-				Identifier = GetNextIdentifier(),
+				Sequence = GetNextSequence(),
 				AcknowledgeRequired = false
 			};
 			var resp = await BroadcastMessageAsync<StateLabelResponse>(device.HostName, header, MessageType.DeviceGetLabel).ConfigureAwait(false);
@@ -74,7 +74,7 @@ namespace LifxNet
 
 			FrameHeader header = new FrameHeader()
 			{
-				Identifier = GetNextIdentifier(),
+				Sequence = GetNextSequence(),
 				AcknowledgeRequired = true
 			};
 			_ = await BroadcastMessageAsync<AcknowledgementResponse>(
@@ -91,7 +91,7 @@ namespace LifxNet
 
 			FrameHeader header = new FrameHeader()
 			{
-				Identifier = GetNextIdentifier(),
+				Sequence = GetNextSequence(),
 				AcknowledgeRequired = false
 			};
 			return BroadcastMessageAsync<StateVersionResponse>(device.HostName, header, MessageType.DeviceGetVersion);
@@ -108,7 +108,7 @@ namespace LifxNet
 
 			FrameHeader header = new FrameHeader()
 			{
-				Identifier = GetNextIdentifier(),
+				Sequence = GetNextSequence(),
 				AcknowledgeRequired = false
 			};
 			return BroadcastMessageAsync<StateHostFirmwareResponse>(device.HostName, header, MessageType.DeviceGetHostFirmware);
