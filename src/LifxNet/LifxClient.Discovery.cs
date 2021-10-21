@@ -10,7 +10,7 @@ namespace LifxNet
 {
 	public partial class LifxClient : IDisposable
 	{
-		private static uint identifier = 1;
+		private static uint identifier = 2;
 		private static object identifierLock = new object();
 		private UInt32 discoverSourceID;
 		private CancellationTokenSource? _DiscoverCancellationSource;
